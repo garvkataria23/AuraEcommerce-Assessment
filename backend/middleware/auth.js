@@ -30,4 +30,21 @@ async function adminMiddleware(req, res, next) {
   next();
 }
 
-module.exports = { generateToken, authMiddleware, adminMiddleware, JWT_SECRET };
+async function optionalAuth(req, res, next) {
+  try {
+    const header = req.headers.authorization;
+    if (!header || !header.startsWith('Bearer ')) {
+      req.user = null;
+      return next();
+    }
+    const token = header.split(' ')[1];
+    const decoded = jwt.verify(token, JWT_SECRET);
+    req.user = await User.findById(decoded.id);
+    next();
+  } catch {
+    req.user = null;
+    next();
+  }
+}
+
+module.exports = { generateToken, authMiddleware, adminMiddleware, optionalAuth, JWT_SECRET };
