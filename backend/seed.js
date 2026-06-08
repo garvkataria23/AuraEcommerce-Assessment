@@ -1,7 +1,7 @@
 const mongoose = require('mongoose');
 const Product = require('./models/Product');
 
-const MONGO_URI = process.env.MONGO_URI || 'mongodb://127.0.0.1:27017/aura-ecommerce';
+const MONGO_URI = process.env.MONGODB_URI || 'mongodb://localhost:27017/auraecommerce';
 
 const products = [
   {

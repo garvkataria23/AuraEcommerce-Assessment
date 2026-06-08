@@ -8,7 +8,7 @@ const ordersRouter = require('./routes/orders');
 
 const app = express();
 const PORT = process.env.PORT || 3000;
-const MONGO_URI = process.env.MONGO_URI || 'mongodb://127.0.0.1:27017/aura-ecommerce';
+const MONGO_URI = process.env.MONGODB_URI || 'mongodb://localhost:27017/auraecommerce';
 
 app.use(cors());
 app.use(express.json());
@@ -18,6 +18,14 @@ app.use('/api/cart', cartRouter);
 app.use('/api/orders', ordersRouter);
 
 app.get('/api/health', (_req, res) => res.json({ status: 'ok' }));
+
+console.log('MONGODB_URI exists:', !!process.env.MONGODB_URI);
+console.log(
+  'Mongo URI prefix:',
+  process.env.MONGODB_URI
+    ? process.env.MONGODB_URI.substring(0, 30)
+    : 'NOT SET — using fallback'
+);
 
 mongoose.connect(MONGO_URI)
   .then(() => {
