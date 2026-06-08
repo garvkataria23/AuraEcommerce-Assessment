@@ -6,21 +6,21 @@ import { AuthService } from '../../services/auth.service';
 import { ToastService } from '../../services/toast.service';
 
 @Component({
-  selector: 'app-login',
+  selector: 'app-register',
   standalone: true,
   imports: [CommonModule, ReactiveFormsModule, RouterLink],
-  templateUrl: './login.component.html'
+  templateUrl: './register.component.html'
 })
-export class LoginComponent {
+export class RegisterComponent {
   submitted = false;
-  showPassword = false;
   loading = false;
 
-  loginForm = this.fb.group({
+  form = this.fb.group({
+    name: ['', [Validators.required, Validators.minLength(2)]],
     email: ['', [Validators.required, Validators.email]],
     password: ['', [Validators.required, Validators.minLength(6)]],
-    remember: [false]
-  });
+    confirmPassword: ['', [Validators.required]]
+  }, { validators: this.passwordsMatch });
 
   constructor(
     private fb: FormBuilder,
@@ -29,19 +29,26 @@ export class LoginComponent {
     private router: Router
   ) {}
 
-  get f() { return this.loginForm.controls; }
+  get f() { return this.form.controls; }
 
-  login() {
+  passwordsMatch(group: any) {
+    if (group.get('password')?.value !== group.get('confirmPassword')?.value) {
+      group.get('confirmPassword')?.setErrors({ mismatch: true });
+    }
+    return null;
+  }
+
+  register() {
     this.submitted = true;
-    if (this.loginForm.invalid) return;
+    if (this.form.invalid) return;
     this.loading = true;
-    this.auth.login(this.loginForm.value.email!, this.loginForm.value.password!).subscribe({
+    this.auth.register(this.form.value.name!, this.form.value.email!, this.form.value.password!).subscribe({
       next: () => {
-        this.toast.show('Welcome back!', 'success');
+        this.toast.show('Account created successfully!', 'success');
         this.router.navigate(['/products']);
       },
       error: (err) => {
-        this.toast.show(err.error?.message || 'Login failed', 'error');
+        this.toast.show(err.error?.message || 'Registration failed', 'error');
         this.loading = false;
       }
     });

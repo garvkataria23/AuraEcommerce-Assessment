@@ -5,6 +5,10 @@ const cors = require('cors');
 const productsRouter = require('./routes/products');
 const cartRouter = require('./routes/cart');
 const ordersRouter = require('./routes/orders');
+const authRouter = require('./routes/auth');
+const reviewsRouter = require('./routes/reviews');
+const couponsRouter = require('./routes/coupons');
+const chatRouter = require('./routes/chat');
 
 const app = express();
 const PORT = process.env.PORT || 3000;
@@ -16,6 +20,10 @@ app.use(express.json());
 app.use('/api/products', productsRouter);
 app.use('/api/cart', cartRouter);
 app.use('/api/orders', ordersRouter);
+app.use('/api/auth', authRouter);
+app.use('/api/reviews', reviewsRouter);
+app.use('/api/coupons', couponsRouter);
+app.use('/api/chat', chatRouter);
 
 app.get('/api/health', (_req, res) => res.json({ status: 'ok' }));
 

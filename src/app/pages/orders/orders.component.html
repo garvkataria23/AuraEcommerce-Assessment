@@ -1,0 +1,40 @@
+<div class="details-card">
+  <div class="p-3 px-4" style="border-bottom: 1px solid var(--border);">
+    <h4 class="mb-0 fw-bold"><i class="bi bi-box-seam" style="color: var(--primary);"></i> My Orders</h4>
+  </div>
+  <div class="p-4">
+    <div *ngIf="loading" class="text-center py-5">
+      <div class="spinner-border" style="color: var(--primary);"></div>
+      <p class="mt-2 text-muted">Loading orders...</p>
+    </div>
+
+    <div *ngIf="!loading && orders.length === 0" class="empty-state">
+      <div class="empty-state-icon"><i class="bi bi-receipt"></i></div>
+      <h4>No orders yet</h4>
+      <p>You haven't placed any orders yet. Start shopping!</p>
+      <a class="btn-custom btn-primary-custom" routerLink="/products"><i class="bi bi-grid-fill"></i> Browse Products</a>
+    </div>
+
+    <div *ngFor="let o of orders" class="mb-3 p-3" style="border: 1px solid var(--border); border-radius: var(--radius-md);">
+      <div class="d-flex justify-content-between align-items-start flex-wrap gap-2">
+        <div>
+          <div class="d-flex align-items-center gap-2">
+            <strong>#{{ o._id?.slice(-8)?.toUpperCase() }}</strong>
+            <span class="badge text-bg-{{ statusBadge(o.status) }}">{{ o.status }}</span>
+          </div>
+          <small style="color: var(--text-light);">{{ o.createdAt | date:'medium' }}</small>
+        </div>
+        <div class="text-end">
+          <div style="font-weight: 800; font-size: 1.1rem;">{{ o.total | currency:'INR' }}</div>
+          <small style="color: var(--text-light);">{{ o.items?.length }} item(s)</small>
+        </div>
+      </div>
+      <div class="mt-2 d-flex flex-wrap gap-2">
+        <span class="product-category" *ngFor="let item of o.items">{{ item.name }} x{{ item.quantity }}</span>
+      </div>
+      <div class="mt-2" style="font-size: 0.85rem; color: var(--text-secondary);">
+        <i class="bi bi-geo-alt"></i> {{ o.address }} | <i class="bi bi-telephone"></i> {{ o.mobile }}
+      </div>
+    </div>
+  </div>
+</div>

@@ -991,7 +991,7 @@ textarea.form-control-custom {
 .back-to-top {
   position: fixed;
   bottom: 2rem;
-  right: 2rem;
+  right: 6rem;
   width: 44px;
   height: 44px;
   border-radius: var(--radius-full);
@@ -1179,4 +1179,38 @@ textarea.form-control-custom {
   .btn-custom { font-size: 0.75rem; padding: 0.4rem 0.8rem; }
   .hero-title { font-size: 1.4rem; }
   .hero-subtitle { font-size: 0.9rem; }
+}
+
+.spin {
+  animation: spin 1s linear infinite;
+  display: inline-block;
+}
+
+@keyframes spin {
+  from { transform: rotate(0deg); }
+  to { transform: rotate(360deg); }
+}
+
+.dropdown-menu {
+  margin-top: 8px;
+  border-radius: var(--radius-md);
+  box-shadow: var(--shadow-lg);
+  border: 1px solid var(--border);
+  padding: 6px;
+}
+
+.dropdown-item {
+  border-radius: var(--radius-sm);
+  font-size: 0.9rem;
+  transition: var(--transition);
+}
+
+.dropdown-item:hover {
+  background: rgba(108,99,255,0.08);
+  color: var(--primary);
+}
+
+.dropdown-item i {
+  width: 20px;
+  margin-right: 8px;
 }

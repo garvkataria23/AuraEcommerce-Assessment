@@ -30,8 +30,9 @@
             </div>
             <div class="details-meta-item">
               <span class="details-meta-label">Availability</span>
-              <span class="details-meta-value" style="color: var(--success);">
-                <i class="bi bi-check-circle-fill"></i> In Stock
+              <span class="details-meta-value" [style.color]="product.stock > 0 ? 'var(--success)' : '#EF4444'">
+                <i class="bi" [ngClass]="product.stock > 0 ? 'bi-check-circle-fill' : 'bi-x-circle-fill'"></i>
+                {{ product.stock > 0 ? 'In Stock (' + product.stock + ')' : 'Out of Stock' }}
               </span>
             </div>
             <div class="details-meta-item">
@@ -58,6 +59,63 @@
             </a>
           </div>
         </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Reviews Section -->
+  <div class="details-card mt-4" @fadeIn>
+    <div class="p-4">
+      <div class="d-flex justify-content-between align-items-center mb-3">
+        <div>
+          <h5 class="fw-bold mb-0"><i class="bi bi-star-fill" style="color: #F59E0B;"></i> Reviews</h5>
+          <small style="color: var(--text-secondary);">
+            {{ reviews.length }} review(s)
+            <span *ngIf="reviews.length > 0"> | Avg: {{ avgRating | number:'1.1-1' }} / 5</span>
+          </small>
+        </div>
+        <button *ngIf="auth.isLoggedIn && !showReviewForm" class="btn-custom btn-primary-custom" (click)="showReviewForm = true">
+          <i class="bi bi-pencil"></i> Write Review
+        </button>
+      </div>
+
+      <!-- Review Form -->
+      <div *ngIf="showReviewForm" class="p-3 mb-3" style="background: var(--bg-main); border-radius: var(--radius-md);">
+        <div class="mb-2 d-flex align-items-center gap-2">
+          <label class="form-label-custom mb-0">Rating:</label>
+          <div class="d-flex gap-1">
+            <span *ngFor="let s of [1,2,3,4,5]" (click)="reviewRating = s" style="cursor: pointer; font-size: 1.4rem; color: {{ s <= reviewRating ? '#F59E0B' : 'var(--border)' }};">
+              <i class="bi" [ngClass]="s <= reviewRating ? 'bi-star-fill' : 'bi-star'"></i>
+            </span>
+          </div>
+        </div>
+        <textarea class="form-control-custom mb-2" [(ngModel)]="reviewComment" placeholder="Share your thoughts..." rows="3"></textarea>
+        <div class="d-flex gap-2">
+          <button class="btn-custom btn-primary-custom" (click)="submitReview()" [disabled]="submittingReview || !reviewComment.trim()">
+            <i class="bi" [ngClass]="submittingReview ? 'bi-arrow-repeat spin' : 'bi-check-lg'"></i>
+            {{ submittingReview ? 'Submitting...' : 'Submit Review' }}
+          </button>
+          <button class="btn-custom btn-outline-custom" (click)="showReviewForm = false">Cancel</button>
+        </div>
+      </div>
+
+      <!-- Review List -->
+      <div *ngIf="reviews.length === 0" class="text-center py-4" style="color: var(--text-light);">
+        <i class="bi bi-chat-square-text fs-2"></i>
+        <p class="mt-2">No reviews yet. Be the first to review!</p>
+      </div>
+
+      <div *ngFor="let r of reviews" class="p-3 mb-2" style="border: 1px solid var(--border); border-radius: var(--radius-md);">
+        <div class="d-flex justify-content-between align-items-start">
+          <div>
+            <strong>{{ r.name }}</strong>
+            <div class="d-flex gap-1" style="color: #F59E0B; font-size: 0.85rem;">
+              <i class="bi" [ngClass]="s <= r.rating ? 'bi-star-fill' : 'bi-star'" *ngFor="let s of [1,2,3,4,5]"></i>
+            </div>
+          </div>
+          <small style="color: var(--text-light);">{{ r.createdAt | date:'mediumDate' }}</small>
+        </div>
+        <p class="mt-1 mb-0" style="color: var(--text-secondary);">{{ r.comment }}</p>
       </div>
     </div>
   </div>

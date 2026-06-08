@@ -1,0 +1,157 @@
+<div class="mb-4">
+  <h3 class="fw-bold"><i class="bi bi-shield-lock-fill" style="color: var(--primary);"></i> Admin Dashboard</h3>
+  <p style="color: var(--text-secondary);">Manage products, orders, and coupons</p>
+</div>
+
+<!-- Tabs -->
+<div class="d-flex gap-2 mb-4">
+  <button class="btn-custom" [class.btn-primary-custom]="activeTab === 'products'" [class.btn-outline-custom]="activeTab !== 'products'" (click)="setTab('products')">
+    <i class="bi bi-box"></i> Products ({{ products.length }})
+  </button>
+  <button class="btn-custom" [class.btn-primary-custom]="activeTab === 'orders'" [class.btn-outline-custom]="activeTab !== 'orders'" (click)="setTab('orders')">
+    <i class="bi bi-truck"></i> Orders ({{ orders.length }})
+  </button>
+  <button class="btn-custom" [class.btn-primary-custom]="activeTab === 'coupons'" [class.btn-outline-custom]="activeTab !== 'coupons'" (click)="setTab('coupons')">
+    <i class="bi bi-ticket-perforated"></i> Coupons ({{ coupons.length }})
+  </button>
+</div>
+
+<!-- Products Tab -->
+<div *ngIf="activeTab === 'products'">
+  <div class="d-flex justify-content-between align-items-center mb-3">
+    <h5 class="fw-bold mb-0">All Products</h5>
+    <button class="btn-custom btn-primary-custom" (click)="openNewProduct()"><i class="bi bi-plus-lg"></i> Add Product</button>
+  </div>
+
+  <!-- Product Form -->
+  <div class="details-card mb-3 p-4" *ngIf="showProductForm">
+    <h6 class="fw-bold mb-3">{{ editProduct ? 'Edit' : 'New' }} Product</h6>
+    <div class="row g-3">
+      <div class="col-md-4">
+        <label class="form-label-custom">Name</label>
+        <input class="form-control-custom" [(ngModel)]="productForm.name">
+      </div>
+      <div class="col-md-2">
+        <label class="form-label-custom">Price</label>
+        <input class="form-control-custom" type="number" [(ngModel)]="productForm.price">
+      </div>
+      <div class="col-md-2">
+        <label class="form-label-custom">Stock</label>
+        <input class="form-control-custom" type="number" [(ngModel)]="productForm.stock">
+      </div>
+      <div class="col-md-4">
+        <label class="form-label-custom">Category</label>
+        <input class="form-control-custom" [(ngModel)]="productForm.category">
+      </div>
+      <div class="col-md-6">
+        <label class="form-label-custom">Image URL</label>
+        <input class="form-control-custom" [(ngModel)]="productForm.image">
+      </div>
+      <div class="col-12">
+        <label class="form-label-custom">Description</label>
+        <textarea class="form-control-custom" [(ngModel)]="productForm.description" rows="2"></textarea>
+      </div>
+      <div class="col-12 d-flex gap-2">
+        <button class="btn-custom btn-success-custom" (click)="saveProduct()">
+          <i class="bi bi-check-lg"></i> {{ editProduct ? 'Update' : 'Create' }}
+        </button>
+        <button class="btn-custom btn-outline-custom" (click)="showProductForm = false">Cancel</button>
+      </div>
+    </div>
+  </div>
+
+  <div class="table-responsive">
+    <table class="cart-table">
+      <thead>
+        <tr>
+          <th>Product</th>
+          <th>Price</th>
+          <th>Stock</th>
+          <th>Category</th>
+          <th>Actions</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr *ngFor="let p of products">
+          <td>
+            <div class="d-flex align-items-center gap-2">
+              <img [src]="p.image" style="width: 40px; height: 40px; object-fit: contain; border-radius: 6px; background: #f1f3f5;">
+              <span style="font-weight: 600;">{{ p.name }}</span>
+            </div>
+          </td>
+          <td>{{ p.price | currency:'INR' }}</td>
+          <td>
+            <span class="badge" [class.text-bg-success]="p.stock > 20" [class.text-bg-warning]="p.stock > 0 && p.stock <= 20" [class.text-bg-danger]="p.stock === 0">
+              {{ p.stock }}
+            </span>
+          </td>
+          <td><span class="product-category">{{ p.category }}</span></td>
+          <td>
+            <div class="d-flex gap-1">
+              <button class="btn-custom btn-outline-custom" style="padding: 0.3rem 0.6rem; font-size: 0.8rem;" (click)="openEditProduct(p)"><i class="bi bi-pencil"></i></button>
+              <button class="btn-custom btn-danger-custom" style="padding: 0.3rem 0.6rem; font-size: 0.8rem;" (click)="deleteProduct(p._id)"><i class="bi bi-trash"></i></button>
+            </div>
+          </td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+</div>
+
+<!-- Orders Tab -->
+<div *ngIf="activeTab === 'orders'">
+  <div class="table-responsive">
+    <table class="cart-table">
+      <thead>
+        <tr>
+          <th>Order ID</th>
+          <th>Customer</th>
+          <th>Items</th>
+          <th>Total</th>
+          <th>Date</th>
+          <th>Status</th>
+          <th>Action</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr *ngFor="let o of orders">
+          <td><small>#{{ o._id?.slice(-6)?.toUpperCase() }}</small></td>
+          <td>{{ o.customerName }}</td>
+          <td>{{ o.items?.length }}</td>
+          <td style="font-weight: 700;">{{ o.total | currency:'INR' }}</td>
+          <td><small>{{ o.createdAt | date:'mediumDate' }}</small></td>
+          <td><span class="badge text-bg-{{ orderStatusBadge(o.status) }}">{{ o.status }}</span></td>
+          <td>
+            <select class="filter-select" style="padding: 0.3rem 1.5rem 0.3rem 0.5rem; font-size: 0.8rem;" (change)="updateOrderStatus(o._id, $any($event.target).value)">
+              <option value="pending" [selected]="o.status === 'pending'">Pending</option>
+              <option value="confirmed" [selected]="o.status === 'confirmed'">Confirmed</option>
+              <option value="shipped" [selected]="o.status === 'shipped'">Shipped</option>
+              <option value="delivered" [selected]="o.status === 'delivered'">Delivered</option>
+              <option value="cancelled" [selected]="o.status === 'cancelled'">Cancel</option>
+            </select>
+          </td>
+        </tr>
+        <tr *ngIf="orders.length === 0"><td colspan="7" class="text-center text-muted">No orders yet</td></tr>
+      </tbody>
+    </table>
+  </div>
+</div>
+
+<!-- Coupons Tab -->
+<div *ngIf="activeTab === 'coupons'">
+  <div class="details-card p-4">
+    <h6 class="fw-bold mb-3">Active Coupons</h6>
+    <div class="row g-3">
+      <div class="col-md-4" *ngFor="let c of coupons">
+        <div class="p-3" style="border: 2px dashed var(--primary); border-radius: var(--radius-md); background: rgba(108,99,255,0.04);">
+          <h5 class="fw-bold" style="color: var(--primary);">{{ c.code }}</h5>
+          <div style="font-size: 0.9rem;">{{ c.discountPercent }}% OFF</div>
+          <small style="color: var(--text-light);">Min: ₹{{ c.minOrderValue }} | Used: {{ c.usedCount }}/{{ c.usageLimit }}</small>
+        </div>
+      </div>
+      <div class="col-12" *ngIf="coupons.length === 0">
+        <p class="text-muted">No coupons created</p>
+      </div>
+    </div>
+  </div>
+</div>

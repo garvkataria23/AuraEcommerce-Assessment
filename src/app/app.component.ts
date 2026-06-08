@@ -1,9 +1,12 @@
 import { Component, HostListener } from '@angular/core';
+import { Router } from '@angular/router';
 import { CommonModule } from '@angular/common';
 import { RouterLink, RouterLinkActive, RouterOutlet, ChildrenOutletContexts } from '@angular/router';
 import { trigger, transition, style, animate, query, group } from '@angular/animations';
 import { CartService } from './services/cart.service';
+import { AuthService } from './services/auth.service';
 import { ToastComponent } from './components/toast/toast.component';
+import { ChatComponent } from './components/chat/chat.component';
 
 const routeAnimation = trigger('routeAnimation', [
   transition('* => *', [
@@ -26,7 +29,7 @@ const routeAnimation = trigger('routeAnimation', [
 @Component({
   selector: 'app-root',
   standalone: true,
-  imports: [CommonModule, RouterOutlet, RouterLink, RouterLinkActive, ToastComponent],
+  imports: [CommonModule, RouterOutlet, RouterLink, RouterLinkActive, ToastComponent, ChatComponent],
   templateUrl: './app.component.html',
   animations: [routeAnimation]
 })
@@ -36,7 +39,9 @@ export class AppComponent {
 
   constructor(
     public cartService: CartService,
-    private contexts: ChildrenOutletContexts
+    public auth: AuthService,
+    private contexts: ChildrenOutletContexts,
+    private router: Router
   ) {
     this.isDark = localStorage.getItem('theme') === 'dark';
     this.applyTheme();
@@ -63,5 +68,14 @@ export class AppComponent {
 
   scrollToTop() {
     window.scrollTo({ top: 0, behavior: 'smooth' });
+  }
+
+  logout() {
+    this.auth.logout();
+    this.router.navigate(['/products']);
+  }
+
+  get displayName(): string {
+    return this.auth.user?.name?.split(' ')[0] || 'User';
   }
 }

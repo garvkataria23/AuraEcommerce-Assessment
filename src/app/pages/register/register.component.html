@@ -1,0 +1,43 @@
+<div class="row justify-content-center">
+  <div class="col-md-5">
+    <div class="checkout-card">
+      <div class="p-4 text-center" style="background: linear-gradient(135deg, var(--primary), var(--primary-dark)); color: white;">
+        <div style="font-size: 2.5rem; margin-bottom: 0.5rem;"><i class="bi bi-person-plus-fill"></i></div>
+        <h4 class="fw-bold mb-1">Create Account</h4>
+        <small style="opacity: 0.8;">Join AuraStore today</small>
+      </div>
+      <div class="checkout-body">
+        <form [formGroup]="form" (ngSubmit)="register()">
+          <div class="mb-3">
+            <label class="form-label-custom">Full Name</label>
+            <input class="form-control-custom" formControlName="name" placeholder="Your name" [class.is-invalid]="submitted && f.name.errors">
+            <div class="invalid-feedback" *ngIf="submitted && f.name.errors">Name is required</div>
+          </div>
+          <div class="mb-3">
+            <label class="form-label-custom">Email Address</label>
+            <input class="form-control-custom" formControlName="email" type="email" placeholder="you@example.com" [class.is-invalid]="submitted && f.email.errors">
+            <div class="invalid-feedback" *ngIf="submitted && f.email.errors">Valid email is required</div>
+          </div>
+          <div class="mb-3">
+            <label class="form-label-custom">Password</label>
+            <input class="form-control-custom" formControlName="password" type="password" placeholder="Min 6 characters" [class.is-invalid]="submitted && f.password.errors">
+            <div class="invalid-feedback" *ngIf="submitted && f.password.errors?.required">Password is required</div>
+            <div class="invalid-feedback" *ngIf="submitted && f.password.errors?.minlength">At least 6 characters</div>
+          </div>
+          <div class="mb-3">
+            <label class="form-label-custom">Confirm Password</label>
+            <input class="form-control-custom" formControlName="confirmPassword" type="password" placeholder="Repeat password" [class.is-invalid]="submitted && f.confirmPassword.errors">
+            <div class="invalid-feedback" *ngIf="submitted && f.confirmPassword.errors?.mismatch">Passwords do not match</div>
+          </div>
+          <button class="btn-custom btn-primary-custom w-100 text-center" style="padding: 0.9rem;" [disabled]="loading">
+            <i class="bi" [ngClass]="loading ? 'bi-arrow-repeat spin' : 'bi-person-plus-fill'"></i>
+            {{ loading ? 'Creating account...' : 'Create Account' }}
+          </button>
+        </form>
+        <div class="text-center mt-4" style="font-size: 0.9rem; color: var(--text-secondary);">
+          Already have an account? <a routerLink="/login" style="color: var(--primary); text-decoration: none; font-weight: 600;">Sign In</a>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
