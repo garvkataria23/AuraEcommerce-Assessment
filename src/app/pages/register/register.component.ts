@@ -14,6 +14,9 @@ import { ToastService } from '../../services/toast.service';
 export class RegisterComponent {
   submitted = false;
   loading = false;
+  showPassword = false;
+  showConfirmPassword = false;
+  focusedField: string | null = null;
 
   form = this.fb.group({
     name: ['', [Validators.required, Validators.minLength(2)]],
@@ -30,6 +33,23 @@ export class RegisterComponent {
   ) {}
 
   get f() { return this.form.controls; }
+
+  get passwordStrength(): { level: number; label: string; color: string } {
+    const p = this.f.password.value || '';
+    let score = 0;
+    if (p.length >= 6) score++;
+    if (p.length >= 10) score++;
+    if (/[A-Z]/.test(p)) score++;
+    if (/[0-9]/.test(p)) score++;
+    if (/[^A-Za-z0-9]/.test(p)) score++;
+    if (score <= 1) return { level: 0, label: 'Weak', color: '#EF4444' };
+    if (score <= 2) return { level: 1, label: 'Fair', color: '#F59E0B' };
+    if (score <= 3) return { level: 2, label: 'Good', color: '#10B981' };
+    return { level: 3, label: 'Strong', color: '#6366F1' };
+  }
+
+  focusField(field: string) { this.focusedField = field; }
+  blurField(_field: string) { this.focusedField = null; }
 
   passwordsMatch(group: any) {
     if (group.get('password')?.value !== group.get('confirmPassword')?.value) {
@@ -52,5 +72,9 @@ export class RegisterComponent {
         this.loading = false;
       }
     });
+  }
+
+  socialLogin(provider: string) {
+    this.toast.show(`${provider} login coming soon!`, 'info');
   }
 }

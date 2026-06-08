@@ -11,6 +11,8 @@ const reviewsRouter = require('./routes/reviews');
 const couponsRouter = require('./routes/coupons');
 const chatRouter = require('./routes/chat');
 const uploadRouter = require('./routes/upload');
+const adminRouter = require('./routes/admin');
+const wishlistRouter = require('./routes/wishlist');
 
 const app = express();
 const PORT = process.env.PORT || 3000;
@@ -28,6 +30,8 @@ app.use('/api/reviews', reviewsRouter);
 app.use('/api/coupons', couponsRouter);
 app.use('/api/chat', chatRouter);
 app.use('/api/upload', uploadRouter);
+app.use('/api/admin', adminRouter);
+app.use('/api/wishlist', wishlistRouter);
 
 app.get('/api/health', (_req, res) => res.json({ status: 'ok' }));
 

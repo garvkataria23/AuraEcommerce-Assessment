@@ -1,0 +1,121 @@
+<section class="hero-section">
+  <div class="hero-parallax">
+    <div class="hero-bg-grid"></div>
+    <div class="hero-glow hero-glow-1"></div>
+    <div class="hero-glow hero-glow-2"></div>
+    <div class="hero-glow hero-glow-3"></div>
+  </div>
+
+  <div class="hero-container">
+    <!-- Left: Content -->
+    <div class="hero-left">
+      <div class="hero-badge hero-content-enter">
+        <i class="bi bi-lightning-fill"></i> Premium Shopping Experience
+      </div>
+
+      <h1 class="hero-title hero-content-enter">
+        Discover Premium<br/>
+        <span class="gradient-text">Products</span>
+      </h1>
+
+      <p class="hero-desc hero-content-enter">
+        Curated collection of top-quality products at unbeatable prices.
+        Shop with confidence and enjoy free delivery on your first order.
+      </p>
+
+      <div class="hero-cta hero-content-enter">
+        <button class="hero-btn hero-btn-primary"
+          (click)="goToProducts($event)"
+          [class.loading]="shopLoading"
+          aria-label="Shop Now – browse our products catalog"
+          title="Browse all products">
+          <i class="bi bi-bag-check-fill"></i>
+          <span>{{ shopLoading ? 'Loading...' : 'Shop Now' }}</span>
+          <span class="btn-arrow"><i class="bi bi-arrow-right"></i></span>
+        </button>
+        <button class="hero-btn hero-btn-outline"
+          (click)="scrollToCategories($event)"
+          aria-label="Explore Categories – browse by category"
+          title="Browse categories">
+          <i class="bi bi-grid-3x3-gap-fill"></i>
+          <span>Explore Categories</span>
+          <span class="btn-arrow"><i class="bi bi-arrow-down"></i></span>
+        </button>
+      </div>
+
+      <div class="hero-stats hero-content-enter">
+        <div class="stat-item">
+          <span class="stat-value">
+            <span [appCountUp]="products.length || 22" [duration]="2000"></span>+
+          </span>
+          <span class="stat-label">Products</span>
+        </div>
+        <div class="stat-item">
+          <span class="stat-value">
+            <span [appCountUp]="100" [duration]="1500"></span>%
+          </span>
+          <span class="stat-label">Secure</span>
+        </div>
+        <div class="stat-item">
+          <span class="stat-value">24/7</span>
+          <span class="stat-label">Support</span>
+        </div>
+        <div class="stat-item">
+          <span class="stat-value">
+            <span [appCountUp]="500" [duration]="2000"></span>+
+          </span>
+          <span class="stat-label">Happy Customers</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- Right: Visual Showcase -->
+    <div class="hero-right">
+      <div class="showcase">
+        <!-- Glassmorphism decorative cards -->
+        <div class="glass-deco glass-deco-1"></div>
+        <div class="glass-deco glass-deco-2"></div>
+        <div class="glass-deco glass-deco-3"></div>
+
+        <!-- Laptop Card -->
+        <div class="floating-card card-laptop">
+          <img appLazyImage
+            src="https://images.unsplash.com/photo-1496181133206-80ce9b88a853?w=600&h=400&fit=crop&auto=format"
+            alt="Premium Laptop"
+            loading="lazy"
+          />
+          <div class="card-info">
+            <span class="card-name">Premium Laptop</span>
+            <span class="card-price">₹59,999</span>
+          </div>
+        </div>
+
+        <!-- Smartphone Card -->
+        <div class="floating-card card-phone">
+          <img appLazyImage
+            src="https://images.unsplash.com/photo-1511707171634-5f897ff02aa9?w=300&h=500&fit=crop&auto=format"
+            alt="Smartphone Pro"
+            loading="lazy"
+          />
+          <div class="card-info">
+            <span class="card-name">Smartphone Pro</span>
+            <span class="card-price">₹15,999</span>
+          </div>
+        </div>
+
+        <!-- Watch Card -->
+        <div class="floating-card card-watch">
+          <img appLazyImage
+            src="https://images.unsplash.com/photo-1523275335684-37898b6baf30?w=250&h=250&fit=crop&auto=format"
+            alt="Smart Watch"
+            loading="lazy"
+          />
+          <div class="card-info">
+            <span class="card-name">Smart Watch</span>
+            <span class="card-price">₹4,999</span>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>

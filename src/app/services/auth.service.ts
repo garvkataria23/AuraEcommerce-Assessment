@@ -22,6 +22,7 @@ export class AuthService {
   private userSubject = new BehaviorSubject<User | null>(null);
   user$ = this.userSubject.asObservable();
   private tokenKey = 'aura_token';
+  private userKey = 'aura_user';
 
   constructor(private http: HttpClient) {
     const saved = localStorage.getItem(this.tokenKey);
@@ -29,7 +30,11 @@ export class AuthService {
       try {
         const payload = JSON.parse(atob(saved.split('.')[1]));
         if (payload.exp * 1000 > Date.now()) {
-          this.loadProfile().subscribe();
+          const cached = localStorage.getItem(this.userKey);
+          if (cached) {
+            try { this.userSubject.next(JSON.parse(cached)); } catch {}
+          }
+          this.loadProfile().subscribe({ error: () => {} });
         } else {
           localStorage.removeItem(this.tokenKey);
         }
@@ -65,21 +70,33 @@ export class AuthService {
 
   loadProfile(): Observable<User> {
     return this.http.get<User>(environment.apiUrl + '/auth/profile', this.getHeaders())
-      .pipe(tap(user => this.userSubject.next(user)));
+      .pipe(tap(user => {
+        localStorage.setItem(this.userKey, JSON.stringify(user));
+        this.userSubject.next(user);
+      }));
   }
 
   updateProfile(data: Partial<User>): Observable<User> {
     return this.http.put<User>(environment.apiUrl + '/auth/profile', data, this.getHeaders())
-      .pipe(tap(user => this.userSubject.next(user)));
+      .pipe(tap(user => {
+        localStorage.setItem(this.userKey, JSON.stringify(user));
+        this.userSubject.next(user);
+      }));
+  }
+
+  changePassword(currentPassword: string, newPassword: string): Observable<any> {
+    return this.http.put<any>(environment.apiUrl + '/auth/password', { currentPassword, newPassword }, this.getHeaders());
   }
 
   logout() {
     localStorage.removeItem(this.tokenKey);
+    localStorage.removeItem(this.userKey);
     this.userSubject.next(null);
   }
 
   private handleAuth(res: AuthResponse) {
     localStorage.setItem(this.tokenKey, res.token);
+    localStorage.setItem(this.userKey, JSON.stringify(res.user));
     this.userSubject.next(res.user);
   }
 

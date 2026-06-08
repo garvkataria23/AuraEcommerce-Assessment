@@ -4,7 +4,7 @@ import { FormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
 import { RouterLink } from '@angular/router';
 import { FormsModule } from '@angular/forms';
 import { HttpClient } from '@angular/common/http';
-import { trigger, transition, style, animate, keyframes } from '@angular/animations';
+import { trigger, transition, style, animate, keyframes, query, stagger } from '@angular/animations';
 import { environment } from '../../../environments/environment';
 import { CartService } from '../../services/cart.service';
 import { OrderService } from '../../services/order.service';
@@ -27,12 +27,22 @@ const shakeTrigger = trigger('shakeTrigger', [
   ])
 ]);
 
+const fadeSlide = trigger('fadeSlide', [
+  transition(':enter', [
+    style({ opacity: 0, transform: 'translateY(12px)' }),
+    animate('0.35s ease-out', style({ opacity: 1, transform: 'translateY(0)' }))
+  ]),
+  transition(':leave', [
+    animate('0.2s ease-in', style({ opacity: 0, transform: 'translateY(-8px)' }))
+  ])
+]);
+
 @Component({
   selector: 'app-checkout',
   standalone: true,
   imports: [CommonModule, ReactiveFormsModule, FormsModule, RouterLink, CurrencyPipe],
   templateUrl: './checkout.component.html',
-  animations: [shakeTrigger]
+  animations: [shakeTrigger, fadeSlide]
 })
 export class CheckoutComponent {
   submitted = false;
@@ -54,6 +64,12 @@ export class CheckoutComponent {
     city: ['', [Validators.required]],
     pincode: ['', [Validators.required, Validators.pattern('^[0-9]{6}$')]]
   });
+
+  paymentMethods = [
+    { id: 'cod', label: 'Cash on Delivery', desc: 'Pay when you receive', icon: 'bi-cash-stack', color: '#10B981' },
+    { id: 'card', label: 'Credit / Debit Card', desc: 'Visa, Mastercard, RuPay', icon: 'bi-credit-card-2-front', color: '#6366F1' },
+    { id: 'upi', label: 'UPI', desc: 'GPay, PhonePe, Paytm', icon: 'bi-phone', color: '#8B5CF6' }
+  ];
 
   constructor(
     private fb: FormBuilder,
@@ -101,6 +117,21 @@ export class CheckoutComponent {
     this.couponError = '';
   }
 
+  nextStep() {
+    if (this.checkoutStep === 1) {
+      this.submitted = true;
+      if (this.checkoutForm.invalid) {
+        this.shakeState = this.shakeState === 'shake' ? 'shake2' : 'shake';
+        return;
+      }
+    }
+    if (this.checkoutStep < 3) this.checkoutStep++;
+  }
+
+  prevStep() {
+    if (this.checkoutStep > 1) this.checkoutStep--;
+  }
+
   placeOrder() {
     this.submitted = true;
     if (this.checkoutForm.invalid || this.cartService.getItems().length === 0) {
@@ -134,6 +165,7 @@ export class CheckoutComponent {
     this.http.post(environment.apiUrl + '/orders', body, headers).subscribe({
       next: () => {
         this.orderPlaced = true;
+        this.checkoutStep = 4;
         this.cartService.clearCart();
         this.checkoutForm.reset();
         this.submitted = false;

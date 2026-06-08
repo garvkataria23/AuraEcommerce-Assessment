@@ -1,42 +1,112 @@
-<div class="row justify-content-center">
-  <div class="col-md-5">
-    <div class="checkout-card">
-      <div class="p-4 text-center" style="background: linear-gradient(135deg, var(--primary), var(--primary-dark)); color: white;">
-        <div style="font-size: 2.5rem; margin-bottom: 0.5rem;"><i class="bi bi-person-plus-fill"></i></div>
-        <h4 class="fw-bold mb-1">Create Account</h4>
-        <small style="opacity: 0.8;">Join AuraStore today</small>
+<div class="auth-page">
+  <div class="auth-left">
+    <div class="auth-blob"></div>
+    <div class="auth-blob"></div>
+    <div class="auth-blob"></div>
+    <div class="auth-welcome">
+      <div class="auth-badge">
+        <i class="bi bi-shop"></i> AuraStore
       </div>
-      <div class="checkout-body">
-        <form [formGroup]="form" (ngSubmit)="register()">
-          <div class="mb-3">
-            <label class="form-label-custom">Full Name</label>
-            <input class="form-control-custom" formControlName="name" placeholder="Your name" [class.is-invalid]="submitted && f.name.errors">
-            <div class="invalid-feedback" *ngIf="submitted && f.name.errors">Name is required</div>
-          </div>
-          <div class="mb-3">
-            <label class="form-label-custom">Email Address</label>
-            <input class="form-control-custom" formControlName="email" type="email" placeholder="you@example.com" [class.is-invalid]="submitted && f.email.errors">
-            <div class="invalid-feedback" *ngIf="submitted && f.email.errors">Valid email is required</div>
-          </div>
-          <div class="mb-3">
-            <label class="form-label-custom">Password</label>
-            <input class="form-control-custom" formControlName="password" type="password" placeholder="Min 6 characters" [class.is-invalid]="submitted && f.password.errors">
-            <div class="invalid-feedback" *ngIf="submitted && f.password.errors?.required">Password is required</div>
-            <div class="invalid-feedback" *ngIf="submitted && f.password.errors?.minlength">At least 6 characters</div>
-          </div>
-          <div class="mb-3">
-            <label class="form-label-custom">Confirm Password</label>
-            <input class="form-control-custom" formControlName="confirmPassword" type="password" placeholder="Repeat password" [class.is-invalid]="submitted && f.confirmPassword.errors">
-            <div class="invalid-feedback" *ngIf="submitted && f.confirmPassword.errors?.mismatch">Passwords do not match</div>
-          </div>
-          <button class="btn-custom btn-primary-custom w-100 text-center ripple" style="padding: 0.9rem;" [disabled]="loading">
-            <i class="bi" [ngClass]="loading ? 'bi-arrow-repeat spin' : 'bi-person-plus-fill'"></i>
-            {{ loading ? 'Creating account...' : 'Create Account' }}
-          </button>
-        </form>
-        <div class="text-center mt-4" style="font-size: 0.9rem; color: var(--text-secondary);">
-          Already have an account? <a routerLink="/login" style="color: var(--primary); text-decoration: none; font-weight: 600;">Sign In</a>
+      <h1>Join AuraStore</h1>
+      <p class="auth-sub">Create an account and unlock exclusive deals, track orders, and more.</p>
+      <div class="auth-benefits">
+        <div class="auth-benefit">
+          <div class="ab-icon"><i class="bi bi-gift"></i></div>
+          Get 10% off your first order
         </div>
+        <div class="auth-benefit">
+          <div class="ab-icon"><i class="bi bi-clock-history"></i></div>
+          View your order history anytime
+        </div>
+        <div class="auth-benefit">
+          <div class="ab-icon"><i class="bi bi-bell"></i></div>
+          Receive alerts on flash sales
+        </div>
+      </div>
+      <div class="auth-illustration">
+        <svg viewBox="0 0 320 200" fill="none" xmlns="http://www.w3.org/2000/svg">
+          <rect x="40" y="60" width="240" height="120" rx="16" fill="rgba(255,255,255,0.06)" stroke="rgba(255,255,255,0.1)" stroke-width="1.5"/>
+          <rect x="60" y="90" width="80" height="6" rx="3" fill="rgba(255,255,255,0.15)"/>
+          <rect x="60" y="106" width="120" height="6" rx="3" fill="rgba(255,255,255,0.1)"/>
+          <rect x="60" y="122" width="90" height="6" rx="3" fill="rgba(255,255,255,0.08)"/>
+          <circle cx="220" cy="110" r="24" fill="rgba(255,255,255,0.06)" stroke="rgba(255,255,255,0.1)" stroke-width="1.5"/>
+          <circle cx="220" cy="110" r="12" fill="rgba(255,255,255,0.08)"/>
+          <path d="M160 60 L200 30 L240 60" stroke="rgba(255,255,255,0.1)" stroke-width="1.5" fill="none"/>
+          <circle cx="200" cy="30" r="6" fill="rgba(255,255,255,0.08)"/>
+        </svg>
+      </div>
+    </div>
+  </div>
+  <div class="auth-right">
+    <div class="auth-form-card">
+      <div class="afc-header">
+        <h2>Create Account</h2>
+        <p>Fill in the details to get started</p>
+      </div>
+      <form [formGroup]="form" (ngSubmit)="register()">
+        <div class="auth-social">
+          <button type="button" class="auth-social-btn" (click)="socialLogin('google')">
+            <i class="bi bi-google"></i> Google
+          </button>
+        </div>
+        <div class="auth-divider">or sign up with email</div>
+        <div class="auth-floating-group">
+          <input class="auth-input" formControlName="name" type="text" placeholder=" "
+            [class.is-invalid]="submitted && f.name.errors"
+            [class.has-value]="f.name.value"
+            (focus)="focusField('name')" (blur)="blurField('name')"
+            autocomplete="name">
+          <label [class.float]="focusedField === 'name' || f.name.value">Full Name</label>
+          <div class="invalid-feedback" *ngIf="submitted && f.name.errors">Name is required</div>
+        </div>
+        <div class="auth-floating-group">
+          <input class="auth-input" formControlName="email" type="email" placeholder=" "
+            [class.is-invalid]="submitted && f.email.errors"
+            [class.has-value]="f.email.value"
+            (focus)="focusField('email')" (blur)="blurField('email')"
+            autocomplete="email">
+          <label [class.float]="focusedField === 'email' || f.email.value">Email Address</label>
+          <div class="invalid-feedback" *ngIf="submitted && f.email.errors">Valid email is required</div>
+        </div>
+        <div class="auth-floating-group">
+          <input class="auth-input" formControlName="password" type="password" placeholder=" "
+            [class.is-invalid]="submitted && f.password.errors"
+            [class.has-value]="f.password.value"
+            (focus)="focusField('password')" (blur)="blurField('password')"
+            autocomplete="new-password">
+          <label [class.float]="focusedField === 'password' || f.password.value">Password</label>
+          <button type="button" class="auth-pw-toggle" (click)="showPassword = !showPassword" tabindex="-1">
+            <i class="bi" [ngClass]="showPassword ? 'bi-eye-slash' : 'bi-eye'"></i>
+          </button>
+          <div class="auth-strength" *ngIf="f.password.value" [style.--as-color]="passwordStrength.color">
+            <div class="as-bar" [class.active]="passwordStrength.level >= 1"></div>
+            <div class="as-bar" [class.active]="passwordStrength.level >= 2"></div>
+            <div class="as-bar" [class.active]="passwordStrength.level >= 3"></div>
+            <div class="as-bar" [class.active]="passwordStrength.level >= 4"></div>
+            <span class="as-label">{{ passwordStrength.label }}</span>
+          </div>
+          <div class="invalid-feedback" *ngIf="submitted && f.password.errors?.required">Password is required</div>
+          <div class="invalid-feedback" *ngIf="submitted && f.password.errors?.minlength">At least 6 characters</div>
+        </div>
+        <div class="auth-floating-group">
+          <input class="auth-input" formControlName="confirmPassword" type="password" placeholder=" "
+            [class.is-invalid]="submitted && f.confirmPassword.errors"
+            [class.has-value]="f.confirmPassword.value"
+            (focus)="focusField('confirmPassword')" (blur)="blurField('confirmPassword')"
+            autocomplete="new-password">
+          <label [class.float]="focusedField === 'confirmPassword' || f.confirmPassword.value">Confirm Password</label>
+          <button type="button" class="auth-pw-toggle" (click)="showConfirmPassword = !showConfirmPassword" tabindex="-1">
+            <i class="bi" [ngClass]="showConfirmPassword ? 'bi-eye-slash' : 'bi-eye'"></i>
+          </button>
+          <div class="invalid-feedback" *ngIf="submitted && f.confirmPassword.errors?.mismatch">Passwords do not match</div>
+        </div>
+        <button class="auth-submit" [disabled]="loading">
+          <i class="bi" [ngClass]="loading ? 'bi-arrow-repeat spin' : 'bi-person-plus-fill'"></i>
+          {{ loading ? 'Creating account...' : 'Create Account' }}
+        </button>
+      </form>
+      <div class="auth-footer">
+        Already have an account? <a routerLink="/login">Sign In</a>
       </div>
     </div>
   </div>

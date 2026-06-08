@@ -23,10 +23,14 @@ const listAnim = trigger('listAnim', [
   animations: [listAnim]
 })
 export class CartComponent {
+  loading = true;
+
   constructor(
     public cartService: CartService,
     private toastService: ToastService
-  ) {}
+  ) {
+    setTimeout(() => this.loading = false, 400);
+  }
 
   updateQuantity(productId: string, event: Event) {
     const input = event.target as HTMLInputElement;

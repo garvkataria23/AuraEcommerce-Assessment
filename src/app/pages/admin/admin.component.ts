@@ -1,193 +1,321 @@
-import { Component, OnInit } from '@angular/core';
-import { CommonModule, CurrencyPipe } from '@angular/common';
+import { Component, OnInit, ViewChild, ElementRef } from '@angular/core';
+import { CommonModule, CurrencyPipe, DatePipe, TitleCasePipe } from '@angular/common';
 import { RouterLink } from '@angular/router';
-import { HttpClient, HttpEventType } from '@angular/common/http';
 import { FormsModule } from '@angular/forms';
-import { environment } from '../../../environments/environment';
 import { AuthService } from '../../services/auth.service';
 import { ToastService } from '../../services/toast.service';
+import { AdminService, AnalyticsOverview } from '../../services/admin.service';
 
 @Component({
   selector: 'app-admin',
   standalone: true,
-  imports: [CommonModule, RouterLink, CurrencyPipe, FormsModule],
+  imports: [CommonModule, RouterLink, FormsModule, CurrencyPipe, DatePipe, TitleCasePipe],
   templateUrl: './admin.component.html'
 })
 export class AdminComponent implements OnInit {
-  activeTab: 'analytics' | 'products' | 'orders' | 'coupons' = 'analytics';
+  @ViewChild('imageInput') imageInput!: ElementRef<HTMLInputElement>;
+
+  tab: 'dashboard' | 'products' | 'orders' | 'coupons' | 'users' = 'dashboard';
+
+  analytics: AnalyticsOverview | null = null;
+  totals: any = {};
+  growth: any = {};
+  topProducts: any[] = [];
+  orderStatuses: { label: string; count: number; pct: number; color: string }[] = [];
+  last12Revenue: { month: string; value: number; pct: number }[] = [];
+  last12Orders: { month: string; value: number; pct: number }[] = [];
+
   products: any[] = [];
   orders: any[] = [];
   coupons: any[] = [];
-  loading = true;
+  users: any[] = [];
 
-  // Analytics
-  analytics: any = null;
-  maxRevenue = 0;
-  maxOrders = 0;
+  categories: string[] = [];
 
-  // Product form
-  editProduct: any = null;
   showProductForm = false;
-  productForm: any = { name: '', price: '', description: '', image: '', category: '', stock: '' };
+  editingProduct: any = null;
+  productForm: any = { name: '', price: 0, stock: 0, category: '', description: '', imageName: '', imagePreview: '' };
   selectedFile: File | null = null;
-  imagePreview: string | null = null;
-  uploading = false;
+  saving = false;
+
+  showCouponForm = false;
+  editingCoupon: any = null;
+  couponForm: any = { code: '', discountPercent: 10, minOrderValue: 0, maxDiscount: 0, usageLimit: 0, expiresAt: '', isActive: true };
 
   constructor(
-    private http: HttpClient,
     public auth: AuthService,
+    private admin: AdminService,
     private toast: ToastService
   ) {}
 
   ngOnInit() {
-    this.loadAnalytics();
+    this.loadDashboard();
     this.loadProducts();
     this.loadOrders();
     this.loadCoupons();
+    this.loadUsers();
   }
 
-  getHeaders() {
-    return { headers: { Authorization: `Bearer ${this.auth.token}` } };
+  /* ─── Dashboard ─── */
+  loadDashboard() {
+    this.admin.getAnalytics().subscribe({
+      next: (data) => {
+        this.analytics = data;
+        this.totals = data.totals;
+        this.growth = data.growth;
+        this.topProducts = (data.topProducts || []).slice(0, 6);
+        this.buildStatusChart(data.byStatus || []);
+        this.buildMonthlyCharts(data.series || []);
+      },
+      error: () => this.toast.show('Failed to load analytics', 'error')
+    });
   }
 
-  onFileSelected(event: any) {
-    const file = event.target.files[0];
-    if (!file) return;
-    this.selectedFile = file;
-    const reader = new FileReader();
-    reader.onload = () => this.imagePreview = reader.result as string;
-    reader.readAsDataURL(file);
+  private buildStatusChart(byStatus: any[]) {
+    const colors: Record<string, string> = {
+      pending: '#f59e0b', confirmed: '#6366f1', shipped: '#3b82f6',
+      delivered: '#10b981', cancelled: '#ef4444'
+    };
+    const labels: Record<string, string> = {
+      pending: 'Pending', confirmed: 'Confirmed', shipped: 'Shipped',
+      delivered: 'Delivered', cancelled: 'Cancelled'
+    };
+    const total = byStatus.reduce((s: number, x: any) => s + x.count, 0) || 1;
+    this.orderStatuses = byStatus.map((x: any) => ({
+      label: labels[x._id] || x._id,
+      count: x.count,
+      pct: (x.count / total) * 100,
+      color: colors[x._id] || '#6366f1'
+    }));
   }
 
-  clearFileInput() {
-    this.selectedFile = null;
-    this.imagePreview = null;
+  private buildMonthlyCharts(series: any[]) {
+    if (!series.length) return;
+    const last12 = series.slice(-12);
+    const maxRevenue = Math.max(...last12.map((m: any) => m.revenue), 1);
+    const maxOrders = Math.max(...last12.map((m: any) => m.orders), 1);
+    this.last12Revenue = last12.map((m: any) => ({
+      month: m.month, value: m.revenue, pct: (m.revenue / maxRevenue) * 100
+    }));
+    this.last12Orders = last12.map((m: any) => ({
+      month: m.month, value: m.orders, pct: (m.orders / maxOrders) * 100
+    }));
   }
 
-  // ── Analytics ──
-  loadAnalytics() {
-    this.http.get<any>(environment.apiUrl + '/orders/analytics/overview', this.getHeaders()).subscribe({
+  orderStatusColor(status: string): string {
+    const map: Record<string, string> = {
+      pending: '#f59e0b', confirmed: '#6366f1', shipped: '#3b82f6',
+      delivered: '#10b981', cancelled: '#ef4444'
+    };
+    return map[status] || '#64748b';
+  }
+
+  isExpired(date: string): boolean {
+    return new Date(date) < new Date();
+  }
+
+  /* ─── Products ─── */
+  loadProducts() {
+    this.admin.getProducts().subscribe({
       next: (res) => {
-        this.analytics = res;
-        this.maxRevenue = Math.max(...res.series.map((s: any) => s.revenue), 1);
-        this.maxOrders = Math.max(...res.series.map((s: any) => s.orders), 1);
+        const data = res.data || res || [];
+        this.products = data;
+        this.categories = [...new Set(data.map((p: any) => p.category).filter(Boolean))] as string[];
       },
       error: () => {}
     });
   }
 
-  growthColor(val: number): string {
-    if (val > 0) return '#10B981';
-    if (val < 0) return '#EF4444';
-    return '#6B7280';
-  }
-
-  growthIcon(val: number): string {
-    if (val > 0) return 'bi-graph-up-arrow';
-    if (val < 0) return 'bi-graph-down-arrow';
-    return 'bi-dash-lg';
-  }
-
-  get totalItemsSold(): number {
-    if (!this.analytics?.topProducts) return 0;
-    return this.analytics.topProducts.reduce((sum: number, p: any) => sum + p.count, 0);
-  }
-
-  // ── Products ──
-  loadProducts() {
-    this.http.get<any>(environment.apiUrl + '/products?limit=100').subscribe(res => {
-      this.products = res.data || [];
-      this.loading = false;
-    });
-  }
-
-  loadOrders() {
-    this.http.get<any>(environment.apiUrl + '/orders', this.getHeaders()).subscribe(res => {
-      this.orders = res.data || [];
-    });
-  }
-
-  loadCoupons() {
-    this.http.get<any>(environment.apiUrl + '/coupons', this.getHeaders()).subscribe(res => {
-      this.coupons = res;
-    });
-  }
-
-  openNewProduct() {
-    this.editProduct = null;
-    this.productForm = { name: '', price: '', description: '', image: '', category: '', stock: '50' };
+  openProductForm() {
+    this.editingProduct = null;
+    this.productForm = { name: '', price: 0, stock: 0, category: '', description: '', imageName: '', imagePreview: '' };
+    this.selectedFile = null;
     this.showProductForm = true;
-    this.clearFileInput();
   }
 
-  openEditProduct(p: any) {
-    this.editProduct = p;
+  editProduct(p: any) {
+    this.editingProduct = p;
     this.productForm = {
       name: p.name,
       price: p.price,
-      description: p.description,
-      image: p.image,
+      stock: p.stock ?? 0,
       category: p.category,
-      stock: p.stock
+      description: p.description || '',
+      imageName: '',
+      imagePreview: p.image
     };
-    this.imagePreview = p.image;
+    this.selectedFile = null;
     this.showProductForm = true;
   }
 
+  closeProductForm(event: MouseEvent) {
+    if ((event.target as HTMLElement).classList.contains('admin-modal')) {
+      this.showProductForm = false;
+    }
+  }
+
+  onImageSelected(event: Event) {
+    const file = (event.target as HTMLInputElement).files?.[0];
+    if (!file) return;
+    this.selectedFile = file;
+    this.productForm.imageName = file.name;
+    const reader = new FileReader();
+    reader.onload = () => this.productForm.imagePreview = reader.result;
+    reader.readAsDataURL(file);
+  }
+
   saveProduct() {
-    const data = { ...this.productForm, price: Number(this.productForm.price), stock: Number(this.productForm.stock) };
-
-    const doSave = (imageUrl: string) => {
+    const save = (imageUrl?: string) => {
+      const data: any = {
+        name: this.productForm.name,
+        price: Number(this.productForm.price),
+        stock: Number(this.productForm.stock),
+        category: this.productForm.category,
+        description: this.productForm.description
+      };
       if (imageUrl) data.image = imageUrl;
-      const obs = this.editProduct
-        ? this.http.put(environment.apiUrl + '/products/' + this.editProduct._id, data, this.getHeaders())
-        : this.http.post(environment.apiUrl + '/products', data, this.getHeaders());
 
-      obs.subscribe({
+      this.saving = true;
+      const request = this.editingProduct
+        ? this.admin.updateProduct(this.editingProduct._id || this.editingProduct.id, data)
+        : this.admin.createProduct(data);
+
+      request.subscribe({
         next: () => {
-          this.toast.show(this.editProduct ? 'Product updated' : 'Product created', 'success');
+          this.toast.show(this.editingProduct ? 'Product updated' : 'Product created', 'success');
           this.showProductForm = false;
+          this.saving = false;
           this.loadProducts();
-          this.clearFileInput();
         },
-        error: (err) => this.toast.show(err.error?.message || 'Error', 'error')
+        error: (err) => {
+          this.toast.show(err.error?.message || 'Failed to save product', 'error');
+          this.saving = false;
+        }
       });
     };
 
     if (this.selectedFile) {
-      this.uploading = true;
-      const formData = new FormData();
-      formData.append('image', this.selectedFile);
-      this.http.post<any>(environment.apiUrl + '/upload', formData, this.getHeaders()).subscribe({
-        next: (res) => { this.uploading = false; doSave(res.url); },
-        error: (err) => { this.uploading = false; this.toast.show('Upload failed', 'error'); }
+      this.admin.uploadImage(this.selectedFile).subscribe({
+        next: (res) => save(res.url),
+        error: () => save()
       });
     } else {
-      doSave('');
+      save();
     }
   }
 
   deleteProduct(id: string) {
     if (!confirm('Delete this product?')) return;
-    this.http.delete(environment.apiUrl + '/products/' + id, this.getHeaders()).subscribe({
-      next: () => { this.toast.show('Product deleted', 'info'); this.loadProducts(); },
-      error: (err) => this.toast.show(err.error?.message || 'Error', 'error')
+    this.admin.deleteProduct(id).subscribe({
+      next: () => {
+        this.toast.show('Product deleted', 'success');
+        this.loadProducts();
+      },
+      error: () => this.toast.show('Failed to delete product', 'error')
     });
   }
 
-  updateOrderStatus(id: string, status: string) {
-    this.http.put(environment.apiUrl + '/orders/' + id + '/status', { status }, this.getHeaders()).subscribe({
-      next: () => { this.toast.show('Order status updated', 'success'); this.loadOrders(); },
-      error: (err) => this.toast.show(err.error?.message || 'Error', 'error')
+  /* ─── Orders ─── */
+  loadOrders() {
+    this.admin.getOrders().subscribe({
+      next: (data) => this.orders = data,
+      error: () => {}
     });
   }
 
-  setTab(tab: 'analytics' | 'products' | 'orders' | 'coupons') {
-    this.activeTab = tab;
+  updateOrderStatus(id: string, event: Event) {
+    const status = (event.target as HTMLSelectElement).value;
+    this.admin.updateOrderStatus(id, status).subscribe({
+      next: () => {
+        this.toast.show('Order status updated', 'success');
+        this.loadOrders();
+        this.loadDashboard();
+      },
+      error: () => this.toast.show('Failed to update status', 'error')
+    });
   }
 
-  orderStatusBadge(status: string): string {
-    const map: any = { pending: 'warning', confirmed: 'info', shipped: 'primary', delivered: 'success', cancelled: 'danger' };
-    return map[status] || 'secondary';
+  /* ─── Coupons ─── */
+  loadCoupons() {
+    this.admin.getCoupons().subscribe({
+      next: (data) => this.coupons = data,
+      error: () => {}
+    });
+  }
+
+  openCouponForm() {
+    this.editingCoupon = null;
+    this.couponForm = { code: '', discountPercent: 10, minOrderValue: 0, maxDiscount: 0, usageLimit: 0, expiresAt: '', isActive: true };
+    this.showCouponForm = true;
+  }
+
+  editCoupon(c: any) {
+    this.editingCoupon = c;
+    this.couponForm = {
+      code: c.code,
+      discountPercent: c.discountPercent,
+      minOrderValue: c.minOrderValue ?? 0,
+      maxDiscount: c.maxDiscount ?? 0,
+      usageLimit: c.usageLimit ?? 0,
+      expiresAt: c.expiresAt ? c.expiresAt.slice(0, 10) : '',
+      isActive: c.isActive ?? true
+    };
+    this.showCouponForm = true;
+  }
+
+  deleteCoupon(c: any) {
+    if (!confirm(`Delete coupon "${c.code}"?`)) return;
+    this.admin.deleteCoupon(c._id || c.id).subscribe({
+      next: () => {
+        this.toast.show('Coupon deleted', 'success');
+        this.loadCoupons();
+      },
+      error: () => this.toast.show('Failed to delete coupon', 'error')
+    });
+  }
+
+  closeCouponForm(event: MouseEvent) {
+    if ((event.target as HTMLElement).classList.contains('admin-modal')) {
+      this.showCouponForm = false;
+    }
+  }
+
+  saveCoupon() {
+    this.saving = true;
+    const request = this.editingCoupon
+      ? this.admin.updateCoupon(this.editingCoupon._id || this.editingCoupon.id, this.couponForm)
+      : this.admin.createCoupon(this.couponForm);
+
+    request.subscribe({
+      next: () => {
+        this.toast.show(this.editingCoupon ? 'Coupon updated' : 'Coupon created', 'success');
+        this.showCouponForm = false;
+        this.saving = false;
+        this.loadCoupons();
+      },
+      error: (err) => {
+        this.toast.show(err.error?.message || 'Failed to save coupon', 'error');
+        this.saving = false;
+      }
+    });
+  }
+
+  /* ─── Users ─── */
+  loadUsers() {
+    this.admin.getUsers().subscribe({
+      next: (data) => this.users = data,
+      error: () => {}
+    });
+  }
+
+  makeAdmin(id: string) {
+    if (!confirm('Make this user an admin?')) return;
+    this.admin.updateUserRole(id, 'admin').subscribe({
+      next: () => {
+        this.toast.show('User promoted to admin', 'success');
+        this.loadUsers();
+      },
+      error: () => this.toast.show('Failed to update role', 'error')
+    });
   }
 }

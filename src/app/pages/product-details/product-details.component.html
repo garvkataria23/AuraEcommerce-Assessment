@@ -33,7 +33,7 @@
       <div class="col-md-5">
         <div class="details-image-wrap">
           <img [src]="selectedImage || product.image" class="details-image" [alt]="product.name"
-            (click)="openLightbox()" title="Click to zoom">
+            (click)="openLightbox()" title="Click to zoom" appLazyImage>
           <!-- Rating on image -->
           <div class="product-rating" style="position: absolute; bottom: 12px; left: 12px; background: rgba(0,0,0,0.5); padding: 4px 10px; border-radius: var(--radius-full);">
             <i class="bi" [ngClass]="s ? 'bi-star-fill' : 'bi-star'" style="color: #F59E0B; font-size: 0.7rem;" *ngFor="let s of starsArray(avgRating)"></i>
@@ -89,6 +89,12 @@
             <a class="btn-custom btn-outline-custom ripple" routerLink="/products">
               <i class="bi bi-arrow-left"></i> Back
             </a>
+            <button class="btn-custom btn-outline-custom ripple" style="padding: 0.8rem 1.2rem;"
+              (click)="toggleWishlist()"
+              [class.active-wishlist]="wishlistService.isInWishlist(product._id || product.id)"
+              [title]="wishlistService.isInWishlist(product._id || product.id) ? 'Remove from wishlist' : 'Add to wishlist'">
+              <i class="bi" [ngClass]="wishlistService.isInWishlist(product._id || product.id) ? 'bi-heart-fill' : 'bi-heart'"></i>
+            </button>
           </div>
         </div>
       </div>
@@ -157,23 +163,27 @@
     <p class="section-subtitle">More items in {{ product.category }}</p>
     <div class="product-grid">
       <div class="product-card" *ngFor="let item of relatedProducts">
-        <div class="product-image-wrap">
+        <div class="pc-image-wrap">
           <a [routerLink]="['/product', item.id]">
-            <img [src]="item.image" class="product-image" [alt]="item.name" loading="lazy">
+            <img [src]="item.image" class="pc-image" [alt]="item.name" loading="lazy">
           </a>
         </div>
-        <div class="product-body">
-          <span class="product-category">{{ item.category }}</span>
-          <h5 class="product-name">{{ item.name }}</h5>
-          <div class="product-rating" *ngIf="item.rating">
-            <i class="bi" [ngClass]="s ? 'bi-star-fill' : 'bi-star'" *ngFor="let s of stars(item.rating)"></i>
+        <div class="pc-body">
+          <span class="pc-category">{{ item.category }}</span>
+          <h5 class="pc-name">{{ item.name }}</h5>
+          <div class="pc-rating" *ngIf="item.rating">
+            <div class="pc-stars">
+              <i class="bi" [ngClass]="s ? 'bi-star-fill' : 'bi-star'" *ngFor="let s of stars(item.rating)"></i>
+            </div>
           </div>
-          <div class="product-price">{{ item.price | currency:'INR' }}</div>
-          <div class="product-card-footer">
-            <button class="btn-custom btn-primary-custom atc-btn ripple" (click)="addRelatedToCart(item)">
-              <span class="atc-default"><i class="bi bi-cart-plus"></i> Add</span>
+          <div class="pc-price-row">
+            <span class="pc-price">{{ item.price | currency:'INR' }}</span>
+          </div>
+          <div class="pc-footer">
+            <button class="pc-atc ripple" (click)="addRelatedToCart(item)">
+              <span class="pc-atc-default"><i class="bi bi-cart-plus"></i> Add</span>
             </button>
-            <a class="btn-custom btn-outline-custom ripple" [routerLink]="['/product', item.id]">
+            <a class="pc-details" [routerLink]="['/product', item.id]">
               <i class="bi bi-eye"></i>
             </a>
           </div>
@@ -188,20 +198,22 @@
     <p class="section-subtitle">Continue where you left off</p>
     <div class="product-grid">
       <div class="product-card" *ngFor="let item of recentlyViewed">
-        <div class="product-image-wrap">
+        <div class="pc-image-wrap">
           <a [routerLink]="['/product', item.id]">
-            <img [src]="item.image" class="product-image" [alt]="item.name" loading="lazy">
+            <img [src]="item.image" class="pc-image" [alt]="item.name" loading="lazy">
           </a>
         </div>
-        <div class="product-body">
-          <span class="product-category">{{ item.category }}</span>
-          <h5 class="product-name">{{ item.name }}</h5>
-          <div class="product-price">{{ item.price | currency:'INR' }}</div>
-          <div class="product-card-footer">
-            <button class="btn-custom btn-primary-custom atc-btn ripple" (click)="addRelatedToCart(item)">
-              <span class="atc-default"><i class="bi bi-cart-plus"></i> Add</span>
+        <div class="pc-body">
+          <span class="pc-category">{{ item.category }}</span>
+          <h5 class="pc-name">{{ item.name }}</h5>
+          <div class="pc-price-row">
+            <span class="pc-price">{{ item.price | currency:'INR' }}</span>
+          </div>
+          <div class="pc-footer">
+            <button class="pc-atc ripple" (click)="addRelatedToCart(item)">
+              <span class="pc-atc-default"><i class="bi bi-cart-plus"></i> Add</span>
             </button>
-            <a class="btn-custom btn-outline-custom ripple" [routerLink]="['/product', item.id]">
+            <a class="pc-details" [routerLink]="['/product', item.id]">
               <i class="bi bi-eye"></i>
             </a>
           </div>

@@ -81,21 +81,21 @@ const slideUp = trigger('slideUp', [
       width: 56px;
       height: 56px;
       border-radius: 50%;
-      background: linear-gradient(135deg, #6C63FF, #5A52D5);
+      background: linear-gradient(135deg, var(--primary), var(--primary-dark));
       color: white;
       border: none;
       font-size: 1.5rem;
       cursor: pointer;
-      box-shadow: 0 4px 20px rgba(108,99,255,0.4);
+      box-shadow: var(--shadow-primary);
       transition: all 0.3s cubic-bezier(0.4,0,0.2,1);
-      z-index: 9998;
+      z-index: var(--z-sticky);
       display: flex;
       align-items: center;
       justify-content: center;
     }
     .chat-bubble:hover {
-      transform: scale(1.1);
-      box-shadow: 0 8px 30px rgba(108,99,255,0.5);
+      transform: scale(1.1) rotate(-8deg);
+      box-shadow: var(--shadow-primary-lg);
     }
     .chat-window {
       position: fixed;
@@ -105,16 +105,16 @@ const slideUp = trigger('slideUp', [
       height: 520px;
       background: var(--bg-card);
       border-radius: 16px;
-      box-shadow: 0 16px 48px rgba(0,0,0,0.15);
+      box-shadow: var(--shadow-xl);
       border: 1px solid var(--border);
       display: flex;
       flex-direction: column;
       overflow: hidden;
-      z-index: 9999;
+      z-index: var(--z-sticky);
     }
     .chat-header {
       padding: 1rem;
-      background: linear-gradient(135deg, #6C63FF, #5A52D5);
+      background: linear-gradient(135deg, var(--primary), var(--primary-dark));
       color: white;
       display: flex;
       align-items: center;
@@ -145,7 +145,7 @@ const slideUp = trigger('slideUp', [
       width: 6px;
       height: 6px;
       border-radius: 50%;
-      background: #10B981;
+      background: var(--success);
       display: inline-block;
     }
     .chat-close {
@@ -155,11 +155,11 @@ const slideUp = trigger('slideUp', [
       font-size: 1.4rem;
       cursor: pointer;
       opacity: 0.8;
-      transition: opacity 0.2s;
+      transition: opacity 0.2s, transform 0.2s;
       padding: 0;
       line-height: 1;
     }
-    .chat-close:hover { opacity: 1; }
+    .chat-close:hover { opacity: 1; transform: rotate(90deg); }
     .chat-messages {
       flex: 1;
       overflow-y: auto;
@@ -186,7 +186,7 @@ const slideUp = trigger('slideUp', [
       border-bottom-left-radius: 4px;
     }
     .user .msg-bubble {
-      background: linear-gradient(135deg, #6C63FF, #5A52D5);
+      background: linear-gradient(135deg, var(--primary), var(--primary-dark));
       color: white;
       border-bottom-right-radius: 4px;
     }
@@ -224,10 +224,11 @@ const slideUp = trigger('slideUp', [
       background: var(--bg-main);
       color: var(--text-primary);
       outline: none;
-      transition: border-color 0.2s;
+      transition: border-color 0.2s, box-shadow 0.2s;
     }
     .chat-input-field:focus {
-      border-color: #6C63FF;
+      border-color: var(--primary);
+      box-shadow: 0 0 0 3px rgba(108,99,255,0.12);
     }
     .chat-input-field:disabled {
       opacity: 0.6;
@@ -237,7 +238,7 @@ const slideUp = trigger('slideUp', [
       height: 42px;
       border-radius: 10px;
       border: none;
-      background: linear-gradient(135deg, #6C63FF, #5A52D5);
+      background: linear-gradient(135deg, var(--primary), var(--primary-dark));
       color: white;
       font-size: 1.1rem;
       cursor: pointer;
@@ -248,7 +249,7 @@ const slideUp = trigger('slideUp', [
     }
     .chat-send-btn:hover:not(:disabled) {
       transform: scale(1.05);
-      box-shadow: 0 4px 12px rgba(108,99,255,0.3);
+      box-shadow: var(--shadow-primary);
     }
     .chat-send-btn:disabled {
       opacity: 0.5;
@@ -260,6 +261,13 @@ const slideUp = trigger('slideUp', [
         height: 60vh;
         right: 1rem;
         bottom: 5rem;
+      }
+      .chat-bubble {
+        right: 1rem;
+        bottom: 4.5rem;
+        width: 48px;
+        height: 48px;
+        font-size: 1.2rem;
       }
     }
   `],

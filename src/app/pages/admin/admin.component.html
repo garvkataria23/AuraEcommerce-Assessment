@@ -1,311 +1,426 @@
-<div class="mb-4">
-  <h3 class="fw-bold"><i class="bi bi-shield-lock-fill" style="color: var(--primary);"></i> Admin Dashboard</h3>
-  <p style="color: var(--text-secondary);">Analytics, products, orders, and coupons</p>
-</div>
+<div class="admin-layout">
+  <!-- Sidebar -->
+  <aside class="admin-sidebar">
+    <div class="as-header">
+      <i class="bi bi-shop"></i> AuraStore
+      <span>Admin</span>
+    </div>
+    <nav class="as-nav">
+      <button class="as-item" [class.active]="tab === 'dashboard'" (click)="tab = 'dashboard'">
+        <i class="bi bi-grid-1x2-fill"></i> Dashboard
+      </button>
+      <button class="as-item" [class.active]="tab === 'products'" (click)="tab = 'products'">
+        <i class="bi bi-box-seam-fill"></i> Products
+        <span class="as-badge" *ngIf="products.length">{{ products.length }}</span>
+      </button>
+      <button class="as-item" [class.active]="tab === 'orders'" (click)="tab = 'orders'">
+        <i class="bi bi-truck"></i> Orders
+        <span class="as-badge" *ngIf="orders.length">{{ orders.length }}</span>
+      </button>
+      <button class="as-item" [class.active]="tab === 'coupons'" (click)="tab = 'coupons'">
+        <i class="bi bi-ticket-perforated-fill"></i> Coupons
+        <span class="as-badge" *ngIf="coupons.length">{{ coupons.length }}</span>
+      </button>
+      <button class="as-item" [class.active]="tab === 'users'" (click)="tab = 'users'">
+        <i class="bi bi-people-fill"></i> Users
+        <span class="as-badge" *ngIf="users.length">{{ users.length }}</span>
+      </button>
+    </nav>
+    <div class="as-footer">
+      <a class="as-item" routerLink="/products">
+        <i class="bi bi-arrow-left"></i> Back to Store
+      </a>
+    </div>
+  </aside>
 
-<!-- Tabs -->
-<div class="d-flex gap-2 mb-4 flex-wrap">
-  <button class="btn-custom" [class.btn-primary-custom]="activeTab === 'analytics'" [class.btn-outline-custom]="activeTab !== 'analytics'" (click)="setTab('analytics')">
-    <i class="bi bi-graph-up"></i> Analytics
-  </button>
-  <button class="btn-custom" [class.btn-primary-custom]="activeTab === 'products'" [class.btn-outline-custom]="activeTab !== 'products'" (click)="setTab('products')">
-    <i class="bi bi-box"></i> Products ({{ products.length }})
-  </button>
-  <button class="btn-custom" [class.btn-primary-custom]="activeTab === 'orders'" [class.btn-outline-custom]="activeTab !== 'orders'" (click)="setTab('orders')">
-    <i class="bi bi-truck"></i> Orders ({{ orders.length }})
-  </button>
-  <button class="btn-custom" [class.btn-primary-custom]="activeTab === 'coupons'" [class.btn-outline-custom]="activeTab !== 'coupons'" (click)="setTab('coupons')">
-    <i class="bi bi-ticket-perforated"></i> Coupons ({{ coupons.length }})
-  </button>
-</div>
+  <!-- Main Content -->
+  <main class="admin-main">
+    <div class="am-topbar">
+      <h2>{{ tab | titlecase }}</h2>
+      <div class="am-user">
+        <i class="bi bi-shield-fill-check"></i> {{ auth.user?.name || 'Admin' }}
+      </div>
+    </div>
 
-<!-- ==================== ANALYTICS TAB ==================== -->
-<div *ngIf="activeTab === 'analytics' && analytics">
-  <!-- KPI Cards -->
-  <div class="row g-3 mb-4">
-    <div class="col-md-3 col-6">
-      <div class="details-card p-3 text-center">
-        <div style="font-size: 1.8rem; font-weight: 800;">{{ analytics.totals.totalOrders }}</div>
-        <div style="color: var(--text-light); font-size: 0.85rem;">Total Orders</div>
-      </div>
-    </div>
-    <div class="col-md-3 col-6">
-      <div class="details-card p-3 text-center">
-        <div style="font-size: 1.8rem; font-weight: 800;">₹{{ analytics.totals.totalRevenue | number:'1.0-0' }}</div>
-        <div style="color: var(--text-light); font-size: 0.85rem;">Total Revenue</div>
-      </div>
-    </div>
-    <div class="col-md-3 col-6">
-      <div class="details-card p-3 text-center">
-        <div style="font-size: 1.8rem; font-weight: 800;">₹{{ analytics.totals.avgOrder | number:'1.0-0' }}</div>
-        <div style="color: var(--text-light); font-size: 0.85rem;">Avg Order Value</div>
-      </div>
-    </div>
-    <div class="col-md-3 col-6">
-      <div class="details-card p-3 text-center">
-        <div style="font-size: 1.8rem; font-weight: 800;">{{ totalItemsSold }}</div>
-        <div style="color: var(--text-light); font-size: 0.85rem;">Products Sold</div>
-      </div>
-    </div>
-  </div>
+    <div class="am-body">
 
-  <!-- Growth Cards -->
-  <div class="row g-3 mb-4">
-    <div class="col-md-3 col-6">
-      <div class="details-card p-3">
-        <div class="d-flex justify-content-between align-items-center">
-          <span style="color: var(--text-light); font-size: 0.8rem;">Revenue Growth</span>
-          <i class="bi {{ growthIcon(analytics.growth.revenueGrowth) }}" style="color: {{ growthColor(analytics.growth.revenueGrowth) }}; font-size: 1.2rem;"></i>
+      <!-- ═══ DASHBOARD ═══ -->
+      <div *ngIf="tab === 'dashboard'">
+        <!-- KPI Cards -->
+        <div class="kpi-grid">
+          <div class="kpi-card">
+            <div class="kpi-icon" style="background: rgba(99,102,241,0.12); color: #6366f1;">
+              <i class="bi bi-currency-rupee"></i>
+            </div>
+            <div class="kpi-info">
+              <span class="kpi-label">Total Revenue</span>
+              <span class="kpi-value">{{ totals.totalRevenue | currency:'INR' }}</span>
+            </div>
+            <div class="kpi-change" [class.down]="growth.revenueGrowth < 0">
+              <i class="bi" [ngClass]="growth.revenueGrowth >= 0 ? 'bi-arrow-up' : 'bi-arrow-down'"></i>
+              {{ growth.revenueGrowth | number:'1.1-1' }}%
+            </div>
+          </div>
+          <div class="kpi-card">
+            <div class="kpi-icon" style="background: rgba(16,185,129,0.12); color: #10b981;">
+              <i class="bi bi-cart-check-fill"></i>
+            </div>
+            <div class="kpi-info">
+              <span class="kpi-label">Total Orders</span>
+              <span class="kpi-value">{{ totals.totalOrders }}</span>
+            </div>
+            <div class="kpi-change" [class.down]="growth.ordersGrowth < 0">
+              <i class="bi" [ngClass]="growth.ordersGrowth >= 0 ? 'bi-arrow-up' : 'bi-arrow-down'"></i>
+              {{ growth.ordersGrowth | number:'1.1-1' }}%
+            </div>
+          </div>
+          <div class="kpi-card">
+            <div class="kpi-icon" style="background: rgba(245,158,11,0.12); color: #f59e0b;">
+              <i class="bi bi-people-fill"></i>
+            </div>
+            <div class="kpi-info">
+              <span class="kpi-label">Total Users</span>
+              <span class="kpi-value">{{ users.length }}</span>
+            </div>
+          </div>
+          <div class="kpi-card">
+            <div class="kpi-icon" style="background: rgba(239,68,68,0.12); color: #ef4444;">
+              <i class="bi bi-box-seam-fill"></i>
+            </div>
+            <div class="kpi-info">
+              <span class="kpi-label">Items Sold</span>
+              <span class="kpi-value">{{ analytics?.itemsSold || 0 }}</span>
+            </div>
+          </div>
         </div>
-        <div style="font-size: 1.5rem; font-weight: 700; color: {{ growthColor(analytics.growth.revenueGrowth) }};">
-          {{ analytics.growth.revenueGrowth > 0 ? '+' : '' }}{{ analytics.growth.revenueGrowth }}%
-        </div>
-        <small style="color: var(--text-light);">Last 3mo vs previous 3mo</small>
-      </div>
-    </div>
-    <div class="col-md-3 col-6">
-      <div class="details-card p-3">
-        <div class="d-flex justify-content-between align-items-center">
-          <span style="color: var(--text-light); font-size: 0.8rem;">Orders Growth</span>
-          <i class="bi {{ growthIcon(analytics.growth.ordersGrowth) }}" style="color: {{ growthColor(analytics.growth.ordersGrowth) }}; font-size: 1.2rem;"></i>
-        </div>
-        <div style="font-size: 1.5rem; font-weight: 700; color: {{ growthColor(analytics.growth.ordersGrowth) }};">
-          {{ analytics.growth.ordersGrowth > 0 ? '+' : '' }}{{ analytics.growth.ordersGrowth }}%
-        </div>
-        <small style="color: var(--text-light);">Last 3mo vs previous 3mo</small>
-      </div>
-    </div>
-    <div class="col-md-3 col-6">
-      <div class="details-card p-3">
-        <div class="d-flex justify-content-between align-items-center">
-          <span style="color: var(--text-light); font-size: 0.8rem;">Prev. Period Revenue</span>
-        </div>
-        <div style="font-size: 1.5rem; font-weight: 700;">₹{{ analytics.growth.previousRevenue | number:'1.0-0' }}</div>
-        <small style="color: var(--text-light);">3-6 months ago</small>
-      </div>
-    </div>
-    <div class="col-md-3 col-6">
-      <div class="details-card p-3">
-        <div class="d-flex justify-content-between align-items-center">
-          <span style="color: var(--text-light); font-size: 0.8rem;">Recent Revenue</span>
-        </div>
-        <div style="font-size: 1.5rem; font-weight: 700;">₹{{ analytics.growth.recentRevenue | number:'1.0-0' }}</div>
-        <small style="color: var(--text-light);">Last 3 months</small>
-      </div>
-    </div>
-  </div>
 
-  <!-- Revenue Chart (Bar) -->
-  <div class="details-card p-4 mb-3">
-    <h6 class="fw-bold mb-3"><i class="bi bi-currency-rupee"></i> Monthly Revenue (30 months)</h6>
-    <div class="chart-container" style="height: 200px; display: flex; align-items: flex-end; gap: 3px;">
-      <div *ngFor="let s of analytics.series" style="flex: 1; display: flex; flex-direction: column; align-items: center; position: relative;">
-        <div
-          class="chart-bar"
-          [style.height.%]="(s.revenue / maxRevenue) * 100"
-          [style.background]="'linear-gradient(to top, #6C63FF, #8B83FF)'"
-          [title]="s.label + ': ₹' + (s.revenue | number:'1.0-0')"
-          style="width: 100%; border-radius: 4px 4px 0 0; transition: height 0.3s; min-height: 2px; cursor: pointer;">
+        <!-- Charts Row -->
+        <div class="chart-grid">
+          <div class="admin-card">
+            <div class="ac-header">
+              <h5><i class="bi bi-graph-up"></i> Revenue (Monthly)</h5>
+              <span class="ac-sub" *ngIf="totals.totalRevenue">Total: {{ totals.totalRevenue | currency:'INR' }}</span>
+            </div>
+            <div class="ac-body">
+              <div class="bar-chart">
+                <div class="bar-item" *ngFor="let m of last12Revenue; let i = index" [style.height.%]="m.pct" title="{{ m.month }}: {{ m.value | currency:'INR' }}">
+                  <div class="bar-fill" style="background: linear-gradient(to top, #6366f1, #818cf8);"></div>
+                </div>
+              </div>
+              <div class="bar-labels">
+                <span *ngFor="let m of last12Revenue">{{ m.month | slice:0:3 }}</span>
+              </div>
+            </div>
+          </div>
+          <div class="admin-card">
+            <div class="ac-header">
+              <h5><i class="bi bi-bar-chart-fill"></i> Orders (Monthly)</h5>
+              <span class="ac-sub" *ngIf="totals.totalOrders">Total: {{ totals.totalOrders }}</span>
+            </div>
+            <div class="ac-body">
+              <div class="bar-chart">
+                <div class="bar-item" *ngFor="let m of last12Orders; let i = index" [style.height.%]="m.pct" title="{{ m.month }}: {{ m.value }} orders">
+                  <div class="bar-fill" style="background: linear-gradient(to top, #10b981, #34d399);"></div>
+                </div>
+              </div>
+              <div class="bar-labels">
+                <span *ngFor="let m of last12Orders">{{ m.month | slice:0:3 }}</span>
+              </div>
+            </div>
+          </div>
         </div>
-        <span style="font-size: 0.55rem; color: var(--text-light); transform: rotate(-45deg); margin-top: 4px; white-space: nowrap;" *ngIf="analytics.series.indexOf(s) % 3 === 0 || analytics.series.length < 15">
-          {{ s.label }}
-        </span>
-      </div>
-    </div>
-  </div>
 
-  <!-- Orders Chart -->
-  <div class="details-card p-4 mb-3">
-    <h6 class="fw-bold mb-3"><i class="bi bi-cart-check"></i> Monthly Orders</h6>
-    <div class="chart-container" style="height: 150px; display: flex; align-items: flex-end; gap: 3px;">
-      <div *ngFor="let s of analytics.series" style="flex: 1; display: flex; flex-direction: column; align-items: center;">
-        <div
-          class="chart-bar"
-          [style.height.%]="(s.orders / maxOrders) * 100"
-          [style.background]="'linear-gradient(to top, #10B981, #34D399)'"
-          [title]="s.label + ': ' + s.orders + ' orders'"
-          style="width: 100%; border-radius: 4px 4px 0 0; transition: height 0.3s; min-height: 2px; cursor: pointer;">
-        </div>
-      </div>
-    </div>
-  </div>
-
-  <!-- Top Products -->
-  <div class="details-card p-4 mb-3">
-    <h6 class="fw-bold mb-3"><i class="bi bi-trophy"></i> Top Selling Products</h6>
-    <div class="row g-2">
-      <div class="col-md-6" *ngFor="let p of analytics.topProducts; let i = index">
-        <div class="d-flex align-items-center gap-2 p-2" style="border-radius: var(--radius-sm); background: var(--bg-main);">
-          <span style="font-weight: 800; color: var(--primary); min-width: 24px;">#{{ i + 1 }}</span>
-          <div style="flex: 1;">
-            <div style="font-weight: 600; font-size: 0.9rem;">{{ p._id }}</div>
-            <div style="font-size: 0.8rem; color: var(--text-light);">Sold: {{ p.count }} | ₹{{ p.revenue | number:'1.0-0' }}</div>
+        <!-- Bottom Row -->
+        <div class="chart-grid">
+          <div class="admin-card">
+            <div class="ac-header"><h5><i class="bi bi-star-fill"></i> Top Products</h5></div>
+            <div class="ac-body">
+              <div class="top-product" *ngFor="let p of topProducts">
+                <img [src]="p.image" [alt]="p.name" class="tp-img">
+                <div class="tp-info">
+                  <span class="tp-name">{{ p.name }}</span>
+                  <span class="tp-count">{{ p.count }} sold · {{ p.revenue | currency:'INR' }}</span>
+                </div>
+                <div class="tp-bar-bg">
+                  <div class="tp-bar-fill" [style.width.%]="(p.count / topProducts[0].count) * 100"></div>
+                </div>
+              </div>
+              <div class="empty-table" *ngIf="topProducts.length === 0">No sales data yet</div>
+            </div>
+          </div>
+          <div class="admin-card">
+            <div class="ac-header"><h5><i class="bi bi-pie-chart-fill"></i> Order Status</h5></div>
+            <div class="ac-body">
+              <div class="status-list">
+                <div class="status-item" *ngFor="let s of orderStatuses">
+                  <div class="status-dot" [style.background]="s.color"></div>
+                  <span class="status-label">{{ s.label }}</span>
+                  <span class="status-count">{{ s.count }}</span>
+                  <div class="status-bar-bg">
+                    <div class="status-bar-fill" [style.width.%]="s.pct" [style.background]="s.color"></div>
+                  </div>
+                </div>
+              </div>
+              <div class="empty-table" *ngIf="orderStatuses.length === 0">No orders yet</div>
+            </div>
           </div>
         </div>
       </div>
-    </div>
-  </div>
 
-  <!-- Order Status Breakdown -->
-  <div class="details-card p-4">
-    <h6 class="fw-bold mb-3"><i class="bi bi-pie-chart"></i> Orders by Status</h6>
-    <div class="d-flex gap-3 flex-wrap">
-      <div *ngFor="let s of analytics.byStatus" class="d-flex align-items-center gap-2">
-        <span class="badge text-bg-{{ orderStatusBadge(s._id) }}" style="font-size: 0.9rem; padding: 0.4rem 0.8rem;">{{ s._id }}</span>
-        <span style="font-weight: 700;">{{ s.count }}</span>
-      </div>
-    </div>
-  </div>
-</div>
-
-<div *ngIf="activeTab === 'analytics' && !analytics" class="text-center py-5 text-muted">
-  <i class="bi bi-graph-up" style="font-size: 2rem;"></i>
-  <p class="mt-2">Loading analytics...</p>
-</div>
-
-<!-- ==================== PRODUCTS TAB ==================== -->
-<div *ngIf="activeTab === 'products'">
-  <div class="d-flex justify-content-between align-items-center mb-3">
-    <h5 class="fw-bold mb-0">All Products</h5>
-    <button class="btn-custom btn-primary-custom" (click)="openNewProduct()"><i class="bi bi-plus-lg"></i> Add Product</button>
-  </div>
-
-  <!-- Product Form -->
-  <div class="details-card mb-3 p-4" *ngIf="showProductForm">
-    <h6 class="fw-bold mb-3">{{ editProduct ? 'Edit' : 'New' }} Product</h6>
-    <div class="row g-3">
-      <div class="col-md-4">
-        <label class="form-label-custom">Name</label>
-        <input class="form-control-custom" [(ngModel)]="productForm.name">
-      </div>
-      <div class="col-md-2">
-        <label class="form-label-custom">Price (₹)</label>
-        <input class="form-control-custom" type="number" [(ngModel)]="productForm.price">
-      </div>
-      <div class="col-md-2">
-        <label class="form-label-custom">Stock</label>
-        <input class="form-control-custom" type="number" [(ngModel)]="productForm.stock">
-      </div>
-      <div class="col-md-4">
-        <label class="form-label-custom">Category</label>
-        <input class="form-control-custom" [(ngModel)]="productForm.category">
-      </div>
-      <div class="col-md-6">
-        <label class="form-label-custom">Product Image</label>
-        <div class="d-flex align-items-center gap-3">
-          <input type="file" accept="image/*" class="form-control-custom" (change)="onFileSelected($event)" style="padding: 0.45rem 0.75rem;">
-          <button *ngIf="imagePreview" class="btn-custom btn-outline-custom" style="padding: 0.3rem 0.6rem; font-size: 0.8rem;" (click)="clearFileInput()">Clear</button>
+      <!-- ═══ PRODUCTS ═══ -->
+      <div *ngIf="tab === 'products'">
+        <div class="admin-card">
+          <div class="ac-header">
+            <h5><i class="bi bi-box-seam-fill"></i> All Products</h5>
+            <button class="ac-btn" (click)="openProductForm()"><i class="bi bi-plus-lg"></i> Add Product</button>
+          </div>
+          <div class="ac-body" style="padding:0;">
+            <table class="admin-table">
+              <thead>
+                <tr><th>Product</th><th>Price</th><th>Stock</th><th>Category</th><th>Actions</th></tr>
+              </thead>
+              <tbody>
+                <tr *ngFor="let p of products">
+                  <td>
+                    <div class="at-product">
+                      <img [src]="p.image" [alt]="p.name" class="at-img">
+                      <span class="at-name">{{ p.name }}</span>
+                    </div>
+                  </td>
+                  <td class="at-price">{{ p.price | currency:'INR' }}</td>
+                  <td><span class="stock-badge" [class.out]="(p.stock ?? 0) <= 0">{{ p.stock ?? 0 }}</span></td>
+                  <td>{{ p.category }}</td>
+                  <td>
+                    <button class="at-btn at-edit" (click)="editProduct(p)" title="Edit"><i class="bi bi-pencil"></i></button>
+                    <button class="at-btn at-delete" (click)="deleteProduct(p._id || p.id)" title="Delete"><i class="bi bi-trash"></i></button>
+                  </td>
+                </tr>
+              </tbody>
+            </table>
+            <div class="empty-table" *ngIf="products.length === 0">No products found</div>
+          </div>
         </div>
-        <div *ngIf="imagePreview" class="mt-2">
-          <img [src]="imagePreview" style="max-width: 120px; max-height: 80px; border-radius: 6px; object-fit: contain; border: 1px solid var(--border);">
-        </div>
-      </div>
-      <div class="col-12">
-        <label class="form-label-custom">Description</label>
-        <textarea class="form-control-custom" [(ngModel)]="productForm.description" rows="2"></textarea>
-      </div>
-      <div class="col-12 d-flex gap-2">
-        <button class="btn-custom btn-success-custom" (click)="saveProduct()" [disabled]="uploading">
-          <i class="bi" [ngClass]="uploading ? 'bi-arrow-repeat spin' : 'bi-check-lg'"></i>
-          {{ uploading ? 'Uploading...' : (editProduct ? 'Update' : 'Create') }}
-        </button>
-        <button class="btn-custom btn-outline-custom" (click)="showProductForm = false">Cancel</button>
-      </div>
-    </div>
-  </div>
 
-  <div class="table-responsive">
-    <table class="cart-table">
-      <thead>
-        <tr>
-          <th>Product</th>
-          <th>Price</th>
-          <th>Stock</th>
-          <th>Category</th>
-          <th>Actions</th>
-        </tr>
-      </thead>
-      <tbody>
-        <tr *ngFor="let p of products">
-          <td>
-            <div class="d-flex align-items-center gap-2">
-              <img [src]="p.image" style="width: 40px; height: 40px; object-fit: contain; border-radius: 6px; background: #f1f3f5;">
-              <span style="font-weight: 600;">{{ p.name }}</span>
+        <!-- Product Form Modal -->
+        <div class="admin-modal" *ngIf="showProductForm" (click)="closeProductForm($event)">
+          <div class="amodal-content" (click)="$event.stopPropagation()">
+            <div class="amodal-header">
+              <h5>{{ editingProduct ? 'Edit Product' : 'Add Product' }}</h5>
+              <button class="amodal-close" (click)="showProductForm = false"><i class="bi bi-x-lg"></i></button>
             </div>
-          </td>
-          <td>{{ p.price | currency:'INR' }}</td>
-          <td>
-            <span class="badge" [class.text-bg-success]="p.stock > 20" [class.text-bg-warning]="p.stock > 0 && p.stock <= 20" [class.text-bg-danger]="p.stock === 0">
-              {{ p.stock }}
-            </span>
-          </td>
-          <td><span class="product-category">{{ p.category }}</span></td>
-          <td>
-            <div class="d-flex gap-1">
-              <button class="btn-custom btn-outline-custom" style="padding: 0.3rem 0.6rem; font-size: 0.8rem;" (click)="openEditProduct(p)"><i class="bi bi-pencil"></i></button>
-              <button class="btn-custom btn-danger-custom" style="padding: 0.3rem 0.6rem; font-size: 0.8rem;" (click)="deleteProduct(p._id)"><i class="bi bi-trash"></i></button>
+            <div class="amodal-body">
+              <div class="af-group">
+                <label>Product Name</label>
+                <input class="af-input" [(ngModel)]="productForm.name" placeholder="Enter product name">
+              </div>
+              <div class="af-row">
+                <div class="af-group">
+                  <label>Price (₹)</label>
+                  <input class="af-input" type="number" [(ngModel)]="productForm.price" placeholder="0">
+                </div>
+                <div class="af-group">
+                  <label>Stock</label>
+                  <input class="af-input" type="number" [(ngModel)]="productForm.stock" placeholder="0">
+                </div>
+              </div>
+              <div class="af-group">
+                <label>Category</label>
+                <select class="af-input" [(ngModel)]="productForm.category">
+                  <option value="">Select category</option>
+                  <option *ngFor="let c of categories" [value]="c">{{ c }}</option>
+                </select>
+              </div>
+              <div class="af-group">
+                <label>Description</label>
+                <textarea class="af-input af-textarea" [(ngModel)]="productForm.description" placeholder="Product description"></textarea>
+              </div>
+              <div class="af-group">
+                <label>Image</label>
+                <div class="af-upload" (click)="imageInput.click()">
+                  <input #imageInput type="file" accept="image/*" (change)="onImageSelected($event)" hidden>
+                  <i class="bi bi-cloud-arrow-up"></i>
+                  <span>{{ productForm.imageName || 'Click to upload image' }}</span>
+                </div>
+                <img *ngIf="productForm.imagePreview" [src]="productForm.imagePreview" class="af-preview">
+              </div>
             </div>
-          </td>
-        </tr>
-      </tbody>
-    </table>
-  </div>
-</div>
-
-<!-- ==================== ORDERS TAB ==================== -->
-<div *ngIf="activeTab === 'orders'">
-  <div class="table-responsive">
-    <table class="cart-table">
-      <thead>
-        <tr>
-          <th>Order ID</th>
-          <th>Customer</th>
-          <th>Items</th>
-          <th>Total</th>
-          <th>Date</th>
-          <th>Status</th>
-          <th>Action</th>
-        </tr>
-      </thead>
-      <tbody>
-        <tr *ngFor="let o of orders">
-          <td><small>#{{ o._id?.slice(-6)?.toUpperCase() }}</small></td>
-          <td>{{ o.customerName }}</td>
-          <td>{{ o.items?.length }}</td>
-          <td style="font-weight: 700;">{{ o.total | currency:'INR' }}</td>
-          <td><small>{{ o.createdAt | date:'mediumDate' }}</small></td>
-          <td><span class="badge text-bg-{{ orderStatusBadge(o.status) }}">{{ o.status }}</span></td>
-          <td>
-            <select class="filter-select" style="padding: 0.3rem 1.5rem 0.3rem 0.5rem; font-size: 0.8rem;" (change)="updateOrderStatus(o._id, $any($event.target).value)">
-              <option value="pending" [selected]="o.status === 'pending'">Pending</option>
-              <option value="confirmed" [selected]="o.status === 'confirmed'">Confirmed</option>
-              <option value="shipped" [selected]="o.status === 'shipped'">Shipped</option>
-              <option value="delivered" [selected]="o.status === 'delivered'">Delivered</option>
-              <option value="cancelled" [selected]="o.status === 'cancelled'">Cancel</option>
-            </select>
-          </td>
-        </tr>
-        <tr *ngIf="orders.length === 0"><td colspan="7" class="text-center text-muted">No orders yet</td></tr>
-      </tbody>
-    </table>
-  </div>
-</div>
-
-<!-- ==================== COUPONS TAB ==================== -->
-<div *ngIf="activeTab === 'coupons'">
-  <div class="details-card p-4">
-    <h6 class="fw-bold mb-3">Active Coupons</h6>
-    <div class="row g-3">
-      <div class="col-md-4" *ngFor="let c of coupons">
-        <div class="p-3" style="border: 2px dashed var(--primary); border-radius: var(--radius-md); background: rgba(108,99,255,0.04);">
-          <h5 class="fw-bold" style="color: var(--primary);">{{ c.code }}</h5>
-          <div style="font-size: 0.9rem;">{{ c.discountPercent }}% OFF</div>
-          <small style="color: var(--text-light);">Min: ₹{{ c.minOrderValue }} | Used: {{ c.usedCount }}/{{ c.usageLimit }}</small>
+            <div class="amodal-footer">
+              <button class="af-btn af-cancel" (click)="showProductForm = false">Cancel</button>
+              <button class="af-btn af-save" (click)="saveProduct()" [disabled]="saving">
+                <i class="bi" [ngClass]="saving ? 'bi-arrow-repeat spin' : 'bi-check-lg'"></i>
+                {{ saving ? 'Saving...' : 'Save' }}
+              </button>
+            </div>
+          </div>
         </div>
       </div>
-      <div class="col-12" *ngIf="coupons.length === 0">
-        <p class="text-muted">No coupons created</p>
+
+      <!-- ═══ ORDERS ═══ -->
+      <div *ngIf="tab === 'orders'">
+        <div class="admin-card">
+          <div class="ac-header"><h5><i class="bi bi-truck"></i> All Orders</h5></div>
+          <div class="ac-body" style="padding:0;">
+            <table class="admin-table">
+              <thead>
+                <tr><th>Order ID</th><th>Customer</th><th>Items</th><th>Total</th><th>Date</th><th>Status</th><th>Action</th></tr>
+              </thead>
+              <tbody>
+                <tr *ngFor="let o of orders">
+                  <td class="at-mono">#{{ o._id?.slice(-6) || 'N/A' }}</td>
+                  <td>
+                    <div class="at-customer">
+                      <div class="at-customer-avatar">{{ o.customerName?.[0] || '?' }}</div>
+                      <div>
+                        <div class="at-customer-name">{{ o.customerName }}</div>
+                        <div class="at-customer-email">{{ o.email }}</div>
+                      </div>
+                    </div>
+                  </td>
+                  <td>{{ o.items?.length || 0 }} item(s)</td>
+                  <td class="at-price">{{ o.total | currency:'INR' }}</td>
+                  <td class="at-mono">{{ o.createdAt | date:'mediumDate' }}</td>
+                  <td><span class="os-badge" [style.background]="orderStatusColor(o.status)">{{ o.status }}</span></td>
+                  <td>
+                    <select class="af-input af-input-sm" (change)="updateOrderStatus(o._id, $event)" [value]="o.status">
+                      <option value="pending">Pending</option>
+                      <option value="confirmed">Confirmed</option>
+                      <option value="shipped">Shipped</option>
+                      <option value="delivered">Delivered</option>
+                      <option value="cancelled">Cancelled</option>
+                    </select>
+                  </td>
+                </tr>
+              </tbody>
+            </table>
+            <div class="empty-table" *ngIf="orders.length === 0">No orders found</div>
+          </div>
+        </div>
       </div>
+
+      <!-- ═══ COUPONS ═══ -->
+      <div *ngIf="tab === 'coupons'">
+        <div class="admin-card">
+          <div class="ac-header">
+            <h5><i class="bi bi-ticket-perforated-fill"></i> Coupons</h5>
+            <button class="ac-btn" (click)="openCouponForm()"><i class="bi bi-plus-lg"></i> Add Coupon</button>
+          </div>
+          <div class="ac-body">
+                <div class="coupon-grid">
+              <div class="coupon-card" *ngFor="let c of coupons">
+                <div class="cc-top">
+                  <span class="cc-code">{{ c.code }}</span>
+                  <span class="cc-discount">{{ c.discountPercent }}% OFF</span>
+                  <div class="cc-actions">
+                    <button class="cc-btn cc-edit" (click)="editCoupon(c)" title="Edit"><i class="bi bi-pencil"></i></button>
+                    <button class="cc-btn cc-delete" (click)="deleteCoupon(c)" title="Delete"><i class="bi bi-trash"></i></button>
+                  </div>
+                </div>
+                <div class="cc-body">
+                  <div class="cc-info">
+                    <span>Min Order: <strong>{{ c.minOrderValue | currency:'INR' }}</strong></span>
+                    <span>Max Discount: <strong>{{ c.maxDiscount ? (c.maxDiscount | currency:'INR') : 'Unlimited' }}</strong></span>
+                    <span>Used: <strong>{{ c.usedCount }}{{ c.usageLimit ? '/' + c.usageLimit : '' }}</strong></span>
+                  </div>
+                  <div class="cc-usage-bar" *ngIf="c.usageLimit">
+                    <div class="cc-usage-fill" [style.width.%]="(c.usedCount / c.usageLimit) * 100"></div>
+                  </div>
+                  <span class="cc-expires" *ngIf="c.expiresAt && isExpired(c.expiresAt)">Expired</span>
+                  <span class="cc-expires active" *ngIf="c.expiresAt && !isExpired(c.expiresAt)">Active until {{ c.expiresAt | date:'mediumDate' }}</span>
+                  <span class="cc-expires" [class.active]="c.isActive" *ngIf="!c.expiresAt">{{ c.isActive ? 'Active' : 'Inactive' }}</span>
+                </div>
+              </div>
+            </div>
+            <div class="empty-table" *ngIf="coupons.length === 0">No coupons yet</div>
+          </div>
+        </div>
+
+        <!-- Coupon Form Modal -->
+        <div class="admin-modal" *ngIf="showCouponForm" (click)="closeCouponForm($event)">
+          <div class="amodal-content" (click)="$event.stopPropagation()">
+            <div class="amodal-header">
+              <h5>{{ editingCoupon ? 'Edit Coupon' : 'Add Coupon' }}</h5>
+              <button class="amodal-close" (click)="showCouponForm = false"><i class="bi bi-x-lg"></i></button>
+            </div>
+            <div class="amodal-body">
+              <div class="af-group">
+                <label>Coupon Code</label>
+                <input class="af-input" [(ngModel)]="couponForm.code" placeholder="e.g. SUMMER20">
+              </div>
+              <div class="af-row">
+                <div class="af-group">
+                  <label>Discount %</label>
+                  <input class="af-input" type="number" [(ngModel)]="couponForm.discountPercent" placeholder="10">
+                </div>
+                <div class="af-group">
+                  <label>Min Order (₹)</label>
+                  <input class="af-input" type="number" [(ngModel)]="couponForm.minOrderValue" placeholder="0">
+                </div>
+              </div>
+              <div class="af-row">
+                <div class="af-group">
+                  <label>Max Discount (₹)</label>
+                  <input class="af-input" type="number" [(ngModel)]="couponForm.maxDiscount" placeholder="0 = unlimited">
+                </div>
+                <div class="af-group">
+                  <label>Usage Limit</label>
+                  <input class="af-input" type="number" [(ngModel)]="couponForm.usageLimit" placeholder="0 = unlimited">
+                </div>
+              </div>
+              <div class="af-group">
+                <label>Expiry Date</label>
+                <input class="af-input" type="date" [(ngModel)]="couponForm.expiresAt">
+              </div>
+              <div class="af-group">
+                <label class="af-toggle-label">
+                  <input type="checkbox" [(ngModel)]="couponForm.isActive">
+                  <span class="af-toggle-slider"></span>
+                  Active
+                </label>
+              </div>
+            </div>
+            <div class="amodal-footer">
+              <button class="af-btn af-cancel" (click)="showCouponForm = false">Cancel</button>
+              <button class="af-btn af-save" (click)="saveCoupon()" [disabled]="saving">
+                <i class="bi" [ngClass]="saving ? 'bi-arrow-repeat spin' : 'bi-check-lg'"></i>
+                {{ saving ? 'Saving...' : (editingCoupon ? 'Update Coupon' : 'Create Coupon') }}
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- ═══ USERS ═══ -->
+      <div *ngIf="tab === 'users'">
+        <div class="admin-card">
+          <div class="ac-header"><h5><i class="bi bi-people-fill"></i> All Users</h5></div>
+          <div class="ac-body" style="padding:0;">
+            <table class="admin-table">
+              <thead>
+                <tr><th>User</th><th>Email</th><th>Role</th><th>Joined</th><th>Action</th></tr>
+              </thead>
+              <tbody>
+                <tr *ngFor="let u of users">
+                  <td>
+                    <div class="at-customer">
+                      <div class="at-customer-avatar" [style.background]="u.role === 'admin' ? '#6366f1' : '#10b981'">{{ u.name?.[0] || '?' }}</div>
+                      <span class="at-name">{{ u.name }}</span>
+                    </div>
+                  </td>
+                  <td>{{ u.email }}</td>
+                  <td><span class="role-badge" [class.admin]="u.role === 'admin'">{{ u.role }}</span></td>
+                  <td class="at-mono">{{ u.createdAt | date:'mediumDate' }}</td>
+                  <td>
+                    <button *ngIf="u.role !== 'admin'" class="at-btn at-edit" (click)="makeAdmin(u._id)" title="Make Admin"><i class="bi bi-shield-plus"></i></button>
+                    <span *ngIf="u.role === 'admin'" style="color: var(--text-light); font-size: 0.8rem;">—</span>
+                  </td>
+                </tr>
+              </tbody>
+            </table>
+            <div class="empty-table" *ngIf="users.length === 0">No users found</div>
+          </div>
+        </div>
+      </div>
+
     </div>
-  </div>
+  </main>
 </div>

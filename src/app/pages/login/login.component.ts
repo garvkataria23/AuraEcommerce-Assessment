@@ -15,6 +15,7 @@ export class LoginComponent {
   submitted = false;
   showPassword = false;
   loading = false;
+  focusedField: string | null = null;
 
   loginForm = this.fb.group({
     email: ['', [Validators.required, Validators.email]],
@@ -31,6 +32,9 @@ export class LoginComponent {
 
   get f() { return this.loginForm.controls; }
 
+  focusField(field: string) { this.focusedField = field; }
+  blurField(_field: string) { this.focusedField = null; }
+
   login() {
     this.submitted = true;
     if (this.loginForm.invalid) return;
@@ -45,5 +49,9 @@ export class LoginComponent {
         this.loading = false;
       }
     });
+  }
+
+  socialLogin(provider: string) {
+    this.toast.show(`${provider} login coming soon!`, 'info');
   }
 }

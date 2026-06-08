@@ -13,8 +13,20 @@
         </a>
       </div>
 
+      <!-- Skeleton -->
+      <div *ngIf="loading" class="p-4">
+        <div *ngFor="let _ of [1,2,3]" class="d-flex align-items-center gap-3 mb-4 p-3" style="border: 1px solid var(--border); border-radius: var(--radius-md);">
+          <div class="skeleton" style="width: 60px; height: 60px; border-radius: var(--radius-sm);"></div>
+          <div class="flex-grow-1">
+            <div class="skeleton" style="height: 16px; width: 60%; margin-bottom: 8px;"></div>
+            <div class="skeleton" style="height: 12px; width: 30%;"></div>
+          </div>
+          <div class="skeleton" style="width: 80px; height: 36px; border-radius: var(--radius-sm);"></div>
+        </div>
+      </div>
+
       <!-- Empty State -->
-      <div class="empty-state" *ngIf="cartService.getItems().length === 0">
+      <div class="empty-state" *ngIf="!loading && cartService.getItems().length === 0">
         <div class="empty-state-icon"><i class="bi bi-cart-x"></i></div>
         <h4>Your cart is empty</h4>
         <p>Looks like you haven't added anything yet. Browse our products and find something you love!</p>
@@ -35,8 +47,8 @@
               <th></th>
             </tr>
           </thead>
-          <tbody>
-            <tr *ngFor="let item of cartService.getItems()" @fadeIn>
+          <tbody @listAnim>
+            <tr *ngFor="let item of cartService.getItems()">
               <td>
                 <div class="d-flex align-items-center gap-3">
                   <img [src]="item.product.image" class="cart-item-image" [alt]="item.product.name">

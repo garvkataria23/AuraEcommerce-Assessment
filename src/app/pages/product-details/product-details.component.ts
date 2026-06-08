@@ -9,8 +9,10 @@ import { ToastService } from '../../services/toast.service';
 import { AuthService } from '../../services/auth.service';
 import { ReviewService } from '../../services/review.service';
 import { RecentlyViewedService } from '../../services/recently-viewed.service';
+import { WishlistService } from '../../services/wishlist.service';
 import { Product } from '../../models/product.model';
 import { OrderTimelineComponent } from '../../components/order-timeline/order-timeline.component';
+import { LazyImageDirective } from '../../directives/lazy-image.directive';
 
 const fadeIn = trigger('fadeIn', [
   transition(':enter', [
@@ -22,7 +24,7 @@ const fadeIn = trigger('fadeIn', [
 @Component({
   selector: 'app-product-details',
   standalone: true,
-  imports: [CommonModule, RouterLink, CurrencyPipe, FormsModule, DatePipe, OrderTimelineComponent],
+  imports: [CommonModule, RouterLink, CurrencyPipe, FormsModule, DatePipe, OrderTimelineComponent, LazyImageDirective],
   templateUrl: './product-details.component.html',
   animations: [fadeIn]
 })
@@ -51,7 +53,8 @@ export class ProductDetailsComponent {
     private toastService: ToastService,
     public auth: AuthService,
     private reviewService: ReviewService,
-    private recently: RecentlyViewedService
+    private recently: RecentlyViewedService,
+    public wishlistService: WishlistService
   ) {
     const id = this.route.snapshot.paramMap.get('id')!;
     this.productService.getProductById(id).subscribe(data => {
@@ -97,6 +100,16 @@ export class ProductDetailsComponent {
 
   decreaseQty() { if (this.quantity > 1) this.quantity--; }
   increaseQty() { this.quantity++; }
+
+  toggleWishlist() {
+    if (!this.product) return;
+    this.wishlistService.toggle(this.product);
+    const id = this.product._id || this.product.id || '';
+    this.toastService.show(
+      this.wishlistService.isInWishlist(id) ? this.product.name + ' added to wishlist' : this.product.name + ' removed from wishlist',
+      this.wishlistService.isInWishlist(id) ? 'success' : 'warning'
+    );
+  }
 
   addToCart() {
     if (!this.product) return;

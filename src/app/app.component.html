@@ -1,13 +1,20 @@
+<a class="skip-link" href="#main-content">Skip to main content</a>
+
 <nav class="navbar navbar-expand-lg navbar-modern sticky-top">
   <div class="container">
-    <a class="navbar-brand" routerLink="/products">
+    <a class="navbar-brand" routerLink="/">
       <i class="bi bi-shop"></i> AuraStore
     </a>
 
     <div class="d-flex align-items-center gap-2 order-lg-last">
-      <button class="theme-toggle ripple" (click)="toggleTheme()" title="Toggle theme">
-        <i class="bi" [ngClass]="isDark ? 'bi-sun-fill' : 'bi-moon-fill'"></i>
-      </button>
+      <div class="theme-toggle-switch" (click)="toggleTheme()" [class.dark]="isDark" title="Toggle theme">
+        <div class="tts-track">
+          <div class="tts-thumb">
+            <i class="bi bi-sun-fill tts-sun"></i>
+            <i class="bi bi-moon-fill tts-moon"></i>
+          </div>
+        </div>
+      </div>
 
       <button class="navbar-toggler border-0" type="button" data-bs-toggle="collapse" data-bs-target="#mainNavbar">
         <i class="bi bi-list fs-4" style="color: var(--text-primary);"></i>
@@ -16,6 +23,11 @@
 
     <div class="collapse navbar-collapse" id="mainNavbar">
       <ul class="navbar-nav mx-auto">
+        <li class="nav-item">
+          <a class="nav-link nav-link-modern" routerLink="/" routerLinkActive="active" [routerLinkActiveOptions]="{ exact: true }">
+            <i class="bi bi-house-fill"></i> Home
+          </a>
+        </li>
         <li class="nav-item">
           <a class="nav-link nav-link-modern" routerLink="/products" routerLinkActive="active">
             <i class="bi bi-grid-fill"></i> Products
@@ -30,8 +42,11 @@
           </a>
         </li>
         <li class="nav-item">
-          <a class="nav-link nav-link-modern" routerLink="/checkout" routerLinkActive="active">
-            <i class="bi bi-credit-card-fill"></i> Checkout
+          <a class="nav-link nav-link-modern" routerLink="/wishlist" routerLinkActive="active">
+            <i class="bi bi-heart-fill"></i> Wishlist
+            <span class="cart-badge ms-1" *ngIf="wishlistService.count > 0">
+              {{ wishlistService.count }}
+            </span>
           </a>
         </li>
         <li class="nav-item" *ngIf="!auth.isLoggedIn">
@@ -50,7 +65,7 @@
           </a>
         </li>
         <li class="nav-item" *ngIf="auth.isLoggedIn">
-          <a class="nav-link nav-link-modern" style="cursor: pointer;" (click)="logout()">
+          <a class="nav-link nav-link-modern" routerLink="/profile" routerLinkActive="active">
             <i class="bi bi-person-circle"></i> {{ displayName }}
           </a>
         </li>
@@ -59,7 +74,7 @@
   </div>
 </nav>
 
-<main class="container py-4 position-relative">
+<main id="main-content" class="container py-4 position-relative">
   <div [@routeAnimation]="getRouteAnimation()">
     <router-outlet></router-outlet>
   </div>
@@ -69,37 +84,108 @@
 
 <app-chat></app-chat>
 
-<button class="back-to-top" [class.visible]="showBackToTop" (click)="scrollToTop()" title="Back to top">
+<footer class="footer-premium">
+  <div class="footer-wave">
+    <svg viewBox="0 0 1440 100" preserveAspectRatio="none">
+      <path d="M0,40 C240,100 480,0 720,40 C960,80 1200,0 1440,40 L1440,100 L0,100 Z" fill="var(--bg-main)"/>
+    </svg>
+  </div>
+
+  <div class="footer-newsletter">
+    <div class="container">
+      <div class="fn-content">
+        <div class="fn-text">
+          <h3>Stay in the loop</h3>
+          <p>Get exclusive deals, new arrivals, and insider-only offers.</p>
+        </div>
+        <form class="fn-form" (submit)="subscribeNewsletter($event)">
+          <input type="email" placeholder="Enter your email" required>
+          <button type="submit">Subscribe</button>
+        </form>
+      </div>
+    </div>
+  </div>
+
+  <div class="container">
+    <div class="footer-grid">
+      <div class="fg-brand">
+        <a class="fg-logo" routerLink="/"><i class="bi bi-shop"></i> AuraStore</a>
+        <p>AuraStore delivers premium products with a seamless shopping experience. Quality curated, just for you.</p>
+        <div class="fg-social">
+          <a href="#" title="Instagram"><i class="bi bi-instagram"></i></a>
+          <a href="#" title="LinkedIn"><i class="bi bi-linkedin"></i></a>
+          <a href="#" title="GitHub"><i class="bi bi-github"></i></a>
+          <a href="#" title="Twitter"><i class="bi bi-twitter-x"></i></a>
+        </div>
+      </div>
+      <div class="fg-col">
+        <h5>Company</h5>
+        <a routerLink="/">About</a>
+        <a routerLink="/">Careers</a>
+        <a routerLink="/">Contact</a>
+      </div>
+      <div class="fg-col">
+        <h5>Support</h5>
+        <a routerLink="/">FAQ</a>
+        <a routerLink="/">Returns</a>
+        <a routerLink="/">Shipping</a>
+      </div>
+      <div class="fg-col">
+        <h5>Legal</h5>
+        <a routerLink="/">Privacy Policy</a>
+        <a routerLink="/">Terms of Service</a>
+      </div>
+    </div>
+  </div>
+
+  <div class="footer-bottom">
+    <div class="container">
+      <div class="fb-row">
+        <span>&copy; 2026 AuraStore. All rights reserved.</span>
+        <div class="fb-payments">
+          <i class="bi bi-credit-card-2-front"></i>
+          <i class="bi bi-paypal"></i>
+          <i class="bi bi-currency-bitcoin"></i>
+        </div>
+      </div>
+    </div>
+  </div>
+</footer>
+
+<button class="back-to-top" [class.visible]="showBackToTop" (click)="scrollToTop()" title="Back to top" aria-label="Back to top">
   <i class="bi bi-arrow-up"></i>
 </button>
 
 <!-- Bottom Navigation (Mobile) -->
-<div class="bottom-nav">
-  <a class="bn-item" routerLink="/products" routerLinkActive="active">
-    <i class="bi bi-grid-fill"></i> Shop
+<nav class="bottom-nav" aria-label="Mobile navigation">
+  <a class="bn-item" routerLink="/" routerLinkActive="active" [routerLinkActiveOptions]="{ exact: true }" aria-label="Home">
+    <i class="bi bi-house-fill"></i>
+    <span class="bn-label">Home</span>
   </a>
-  <a class="bn-item" routerLink="/cart" routerLinkActive="active">
-    <i class="bi bi-cart-fill"></i> Cart
+  <a class="bn-item" routerLink="/products" routerLinkActive="active" aria-label="Products">
+    <i class="bi bi-grid-fill"></i>
+    <span class="bn-label">Shop</span>
+  </a>
+  <a class="bn-item" routerLink="/cart" routerLinkActive="active" aria-label="Cart">
+    <i class="bi bi-cart-fill"></i>
+    <span class="bn-label">Cart</span>
     <span class="bn-badge" *ngIf="cartService.getCartCount() > 0">{{ cartService.getCartCount() }}</span>
   </a>
-  <a class="bn-item" routerLink="/orders" routerLinkActive="active">
-    <i class="bi bi-box-seam"></i> Orders
+  <a class="bn-item" routerLink="/wishlist" routerLinkActive="active" aria-label="Wishlist">
+    <i class="bi bi-heart-fill"></i>
+    <span class="bn-label">Wishlist</span>
+    <span class="bn-badge" *ngIf="wishlistService.count > 0">{{ wishlistService.count }}</span>
   </a>
-  <a class="bn-item" [routerLink]="auth.isLoggedIn ? '/orders' : '/login'" routerLinkActive="active">
-    <i class="bi bi-person-fill"></i> {{ auth.isLoggedIn ? displayName : 'Account' }}
-  </a>
-</div>
-
-<footer class="footer-modern">
-  <div class="container text-center">
-    <div class="footer-brand mb-2">AuraStore</div>
-    <div class="footer-links mb-2">
-      <a routerLink="/products">Products</a>
-      <a routerLink="/cart">Cart</a>
-      <a routerLink="/checkout">Checkout</a>
-      <a routerLink="/orders">Orders</a>
-      <a routerLink="/login">Account</a>
-    </div>
-    <small>&copy; 2026 AuraStore. All rights reserved.</small>
-  </div>
-</footer>
+  <ng-container *ngIf="auth.isLoggedIn; else loginLink">
+    <a class="bn-item" routerLink="/profile" routerLinkActive="active" aria-label="Profile">
+      <i class="bi bi-person-circle"></i>
+      <span class="bn-label">Profile</span>
+    </a>
+  </ng-container>
+  <ng-template #loginLink>
+    <a class="bn-item" routerLink="/login" routerLinkActive="active" aria-label="Sign In">
+      <i class="bi bi-person-fill"></i>
+      <span class="bn-label">Sign In</span>
+    </a>
+  </ng-template>
+</nav>

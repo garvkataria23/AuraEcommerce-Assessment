@@ -1,27 +1,4 @@
-<!-- Hero -->
-<section class="hero-modern mb-4">
-  <div class="hero-content w-100">
-    <div class="hero-badge">
-      <i class="bi bi-lightning-fill"></i> Premium Shopping Experience
-    </div>
-    <h1 class="hero-title">Discover Premium<br/>Products</h1>
-    <p class="hero-subtitle">Curated collection of top-quality products at unbeatable prices. Shop with confidence.</p>
-    <div class="hero-stats">
-      <div class="hero-stat">
-        <div class="hero-stat-value">{{ products.length }}+</div>
-        <div class="hero-stat-label">Products</div>
-      </div>
-      <div class="hero-stat">
-        <div class="hero-stat-value">100%</div>
-        <div class="hero-stat-label">Secure</div>
-      </div>
-      <div class="hero-stat">
-        <div class="hero-stat-value">24/7</div>
-        <div class="hero-stat-label">Support</div>
-      </div>
-    </div>
-  </div>
-</section>
+<app-hero [products]="products"></app-hero>
 
 <!-- Search & Filter Bar -->
 <div class="filter-bar mb-4">
@@ -72,60 +49,90 @@
 </div>
 
 <!-- Products Grid -->
-<div class="product-grid" [@cardStagger]="filteredProducts.length" *ngIf="!loading && filteredProducts.length > 0">
+<div id="products-grid">
+  <div class="product-grid" [@cardStagger]="filteredProducts.length" *ngIf="!loading && filteredProducts.length > 0">
   <div class="product-card" *ngFor="let product of filteredProducts; trackBy: trackById">
-    <div class="product-image-wrap">
-      <!-- Badges -->
-      <div class="product-badge featured" *ngIf="product.featured">Featured</div>
-      <div class="product-badge stock-low" *ngIf="!product.featured && product.stock != null && product.stock > 0 && product.stock <= 5">Only {{ product.stock }} left</div>
-      <div class="product-badge stock-out" *ngIf="product.stock != null && product.stock === 0">Out of Stock</div>
+    <!-- Discount Badge -->
+    <div class="pc-discount" *ngIf="getDiscount(product) > 0" [class.pc-discount-lg]="getDiscount(product) >= 20">
+      {{ getDiscount(product) }}% OFF
+    </div>
+
+    <!-- Image Wrapper -->
+    <div class="pc-image-wrap">
+      <div class="pc-stock-badge" [class.in-stock]="isInStock(product)" [class.low-stock]="isLowStock(product)" [class.out-of-stock]="!isInStock(product)">
+        <span class="pc-stock-dot"></span>
+        {{ stockLabel(product) }}
+      </div>
 
       <a [routerLink]="['/product', product.id]">
-        <img [src]="product.image" class="product-image" [alt]="product.name" loading="lazy">
+        <img [src]="product.image" class="pc-image" [alt]="product.name" loading="lazy" appLazyImage>
       </a>
-      <div class="product-actions-overlay">
-        <button class="action-btn" [class.wishlist-active]="isInWishlist(product.id)"
+
+      <!-- Hover Actions -->
+      <div class="pc-actions">
+        <button class="pc-action-btn" [class.active]="isInWishlist(product.id)"
           (click)="toggleWishlist(product)"
           [title]="isInWishlist(product.id) ? 'Remove from wishlist' : 'Add to wishlist'">
           <i class="bi" [ngClass]="isInWishlist(product.id) ? 'bi-heart-fill' : 'bi-heart'"></i>
         </button>
-        <a class="action-btn" [routerLink]="['/product', product.id]" title="Quick view">
+        <a class="pc-action-btn" [routerLink]="['/product', product.id]" title="Quick view">
           <i class="bi bi-eye"></i>
         </a>
+        <button class="pc-action-btn" [class.active]="isInCompare(product.id)"
+          (click)="toggleCompare(product)"
+          title="Compare">
+          <i class="bi bi-arrow-left-right"></i>
+        </button>
       </div>
     </div>
-    <div class="product-body">
-      <span class="product-category">{{ product.category }}</span>
-      <h5 class="product-name">{{ product.name }}</h5>
-      <!-- Rating Stars -->
-      <div class="product-rating" *ngIf="product.rating">
-        <i class="bi" [ngClass]="s ? 'bi-star-fill' : 'bi-star'" *ngFor="let s of stars(product.rating)"></i>
-        <span class="rating-count" *ngIf="product.numReviews">({{ product.numReviews }})</span>
+
+    <!-- Card Body -->
+    <div class="pc-body">
+      <span class="pc-category">{{ product.category }}</span>
+      <h5 class="pc-name">{{ product.name }}</h5>
+
+      <!-- Rating -->
+      <div class="pc-rating" *ngIf="product.rating">
+        <div class="pc-stars">
+          <i class="bi" [ngClass]="s ? 'bi-star-fill' : 'bi-star'" *ngFor="let s of stars(product.rating)"></i>
+        </div>
+        <span class="pc-rating-count" *ngIf="product.numReviews">({{ product.numReviews }})</span>
       </div>
-      <p class="product-description">{{ product.description }}</p>
-      <div class="product-price">{{ product.price | currency:'INR' }}</div>
-      <div class="product-card-footer">
-        <button class="btn-custom btn-primary-custom atc-btn ripple" [class.adding]="addingToCart === product.id" [class.added]="addingToCart === product.id" (click)="addToCart(product)">
-          <span class="atc-default"><i class="bi bi-cart-plus"></i> Add to Cart</span>
-          <span class="atc-success"><i class="bi bi-check-lg"></i> Added!</span>
+
+      <p class="pc-desc">{{ product.description }}</p>
+
+      <!-- Price Section -->
+      <div class="pc-price-row">
+        <span class="pc-price">{{ product.price | currency:'INR' }}</span>
+        <span class="pc-original-price" *ngIf="product.originalPrice">{{ product.originalPrice | currency:'INR' }}</span>
+      </div>
+
+      <!-- Footer -->
+      <div class="pc-footer">
+        <button class="pc-atc" [class.adding]="addingToCart === product.id" [class.added]="addingToCart === product.id" (click)="addToCart(product)">
+          <span class="pc-atc-default"><i class="bi bi-cart-plus"></i> Add to Cart</span>
+          <span class="pc-atc-success"><i class="bi bi-check-lg"></i> Added!</span>
         </button>
-        <a class="btn-custom btn-outline-custom ripple" [routerLink]="['/product', product.id]">
+        <a class="pc-details" [routerLink]="['/product', product.id]" title="View Details">
           <i class="bi bi-chevron-right"></i>
         </a>
       </div>
     </div>
   </div>
 </div>
+</div>
 
 <!-- Skeleton Loader -->
 <div class="product-grid" *ngIf="loading">
-  <div class="skeleton-card" *ngFor="let _ of skeletonArray">
-    <div class="skeleton skeleton-image"></div>
-    <div class="skeleton-body">
-      <div class="skeleton skeleton-line"></div>
-      <div class="skeleton skeleton-line" style="width: 40%;"></div>
-      <div class="skeleton skeleton-line" style="width: 70%;"></div>
-      <div class="skeleton skeleton-line" style="width: 50%; height: 36px; margin-top: 12px;"></div>
+  <div class="s-card" *ngFor="let _ of skeletonArray">
+    <div class="s-img"></div>
+    <div class="s-body">
+      <div class="s-tag"></div>
+      <div class="s-line" style="width: 70%;"></div>
+      <div class="s-line" style="width: 40%;"></div>
+      <div class="s-line s-line-sm"></div>
+      <div class="s-line" style="width: 50%;"></div>
+      <div class="s-btn"></div>
     </div>
   </div>
 </div>

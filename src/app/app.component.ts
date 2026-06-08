@@ -4,9 +4,11 @@ import { CommonModule } from '@angular/common';
 import { RouterLink, RouterLinkActive, RouterOutlet, ChildrenOutletContexts } from '@angular/router';
 import { trigger, transition, style, animate, query, group } from '@angular/animations';
 import { CartService } from './services/cart.service';
+import { WishlistService } from './services/wishlist.service';
 import { AuthService } from './services/auth.service';
 import { ToastComponent } from './components/toast/toast.component';
 import { ChatComponent } from './components/chat/chat.component';
+import { ToastService } from './services/toast.service';
 
 const routeAnimation = trigger('routeAnimation', [
   transition('* => *', [
@@ -39,12 +41,39 @@ export class AppComponent {
 
   constructor(
     public cartService: CartService,
+    public wishlistService: WishlistService,
     public auth: AuthService,
     private contexts: ChildrenOutletContexts,
-    private router: Router
+    private router: Router,
+    private toast: ToastService
   ) {
     this.isDark = localStorage.getItem('theme') === 'dark';
     this.applyTheme();
+    this.setupImageFallback();
+  }
+
+  private setupImageFallback() {
+    document.addEventListener('error', (e) => {
+      const target = e.target as HTMLElement;
+      if (target.tagName !== 'IMG') return;
+      const img = target as HTMLImageElement;
+      if (img.dataset['fallbackSet']) return;
+      img.dataset['fallbackSet'] = 'true';
+      const name = img.getAttribute('alt') || 'Product';
+      const words = name.split(' ').filter(Boolean);
+      const initials = words.map(w => w[0]).join('').slice(0, 2).toUpperCase();
+      const svg = `<svg xmlns="http://www.w3.org/2000/svg" width="400" height="400" viewBox="0 0 400 400">
+        <rect width="400" height="400" fill="#1f2937"/>
+        <text x="200" y="160" text-anchor="middle" font-family="Inter,sans-serif" font-size="80" font-weight="700" fill="#4f46e5">${initials}</text>
+        <text x="200" y="220" text-anchor="middle" font-family="Inter,sans-serif" font-size="18" fill="#94a3b8">${name}</text>
+      </svg>`;
+      // Remove event listener to prevent infinite loop
+      const handler = () => {};
+      img.addEventListener('error', handler, true);
+      img.src = 'data:image/svg+xml,' + encodeURIComponent(svg);
+      img.removeEventListener('error', handler, true);
+      img.style.opacity = '1';
+    }, true);
   }
 
   getRouteAnimation() {
@@ -73,10 +102,19 @@ export class AppComponent {
 
   logout() {
     this.auth.logout();
-    this.router.navigate(['/products']);
+    this.router.navigate(['/']);
   }
 
   get displayName(): string {
     return this.auth.user?.name?.split(' ')[0] || 'User';
+  }
+
+  subscribeNewsletter(event: Event) {
+    event.preventDefault();
+    const input = (event.target as HTMLFormElement).querySelector('input');
+    if (input?.value) {
+      this.toast.show('Subscribed! Check your inbox.', 'success');
+      input.value = '';
+    }
   }
 }

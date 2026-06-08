@@ -1,0 +1,199 @@
+<!-- ─── Hero ─── -->
+<section class="home-hero">
+  <div class="home-hero-grid"></div>
+  <div class="home-hero-glow home-hero-glow-1"></div>
+  <div class="home-hero-glow home-hero-glow-2"></div>
+  <div class="home-hero-content">
+    <div class="home-hero-badge reveal visible">
+      <i class="bi bi-lightning-fill"></i> Premium Shopping Experience
+    </div>
+    <h1 class="reveal visible" style="transition-delay: 0.1s;">
+      Discover Premium<br/>
+      <span class="grad-text">Tech & Lifestyle</span>
+    </h1>
+    <p class="reveal visible" style="transition-delay: 0.2s;">
+      Curated collection of top-quality products at unbeatable prices.
+      Shop with confidence and enjoy free delivery on your first order.
+    </p>
+    <div class="home-hero-cta reveal visible" style="transition-delay: 0.3s;">
+      <button class="hh-btn hh-btn-primary" (click)="goToProducts()" aria-label="Shop Now – browse our products catalog">
+        <i class="bi bi-bag-check-fill"></i>
+        <span>Shop Now</span>
+        <span class="hh-arrow"><i class="bi bi-arrow-right"></i></span>
+      </button>
+      <button class="hh-btn hh-btn-outline" (click)="scrollToCategories()" aria-label="Explore Categories – browse by category">
+        <i class="bi bi-grid-3x3-gap-fill"></i>
+        <span>Explore Categories</span>
+        <span class="hh-arrow"><i class="bi bi-arrow-down"></i></span>
+      </button>
+    </div>
+    <div class="home-hero-stats reveal visible" style="transition-delay: 0.4s;">
+      <div class="hs-item"><span class="hs-val">{{ categoryCount }}</span><span class="hs-lbl">Products</span></div>
+      <div class="hs-item"><span class="hs-val">100%</span><span class="hs-lbl">Secure</span></div>
+      <div class="hs-item"><span class="hs-val">24/7</span><span class="hs-lbl">Support</span></div>
+      <div class="hs-item"><span class="hs-val">500+</span><span class="hs-lbl">Happy Customers</span></div>
+    </div>
+  </div>
+</section>
+
+<!-- ─── Featured Products ─── -->
+<section class="home-section reveal" *ngIf="featured.length > 0">
+  <div class="section-header">
+    <h2>Featured Products</h2>
+    <p>Handpicked selections for you</p>
+  </div>
+  <div class="featured-grid">
+    <div class="home-product-card" *ngFor="let p of featured">
+      <a class="hpc-img" [routerLink]="['/product', p.id]">
+        <img [src]="p.image" [alt]="p.name" loading="lazy">
+      </a>
+      <div class="hpc-body">
+        <span class="hpc-cat">{{ p.category }}</span>
+        <h5>{{ p.name }}</h5>
+        <div class="hpc-price">{{ p.price | currency:'INR' }}</div>
+        <button class="hpc-atc" (click)="addToCart(p)">
+          <i class="bi bi-cart-plus"></i> Add to Cart
+        </button>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ─── Shop by Category ─── -->
+<section id="categories-section" class="home-section reveal">
+  <div class="section-header">
+    <h2>Shop by Category</h2>
+    <p>Find exactly what you need</p>
+  </div>
+  <div class="cat-grid">
+    <a class="cat-card" *ngFor="let cat of categories; let i = index" [routerLink]="'/products'" [queryParams]="{ category: cat.name }"
+      [style.transition-delay]="i * 0.08 + 's'" [class.cat-visible]="categoriesVisible">
+      <span class="cat-icon"><i class="bi {{ cat.icon }}"></i></span>
+      <span class="cat-name">{{ cat.name }}</span>
+      <span class="cat-count">{{ cat.count }} items</span>
+    </a>
+  </div>
+</section>
+
+<!-- ─── Why Choose Us ─── -->
+<section class="home-section reveal">
+  <div class="section-header">
+    <h2>Why Choose Us</h2>
+    <p>We make shopping effortless</p>
+  </div>
+  <div class="why-grid">
+    <div class="why-card">
+      <div class="why-icon"><i class="bi bi-truck"></i></div>
+      <h4>Fast Delivery</h4>
+      <p>Free shipping on orders above ₹499. Delivered within 2-4 business days across India.</p>
+    </div>
+    <div class="why-card">
+      <div class="why-icon"><i class="bi bi-shield-check"></i></div>
+      <h4>Secure Payment</h4>
+      <p>256-bit SSL encrypted payments. Your data is safe with us.</p>
+    </div>
+    <div class="why-card">
+      <div class="why-icon"><i class="bi bi-arrow-counterclockwise"></i></div>
+      <h4>Easy Returns</h4>
+      <p>30-day hassle-free return policy. No questions asked.</p>
+    </div>
+    <div class="why-card">
+      <div class="why-icon"><i class="bi bi-gem"></i></div>
+      <h4>Premium Quality</h4>
+      <p>Every product is handpicked and quality tested before reaching you.</p>
+    </div>
+  </div>
+</section>
+
+<!-- ─── Testimonials ─── -->
+<section class="home-section reveal">
+  <div class="section-header">
+    <h2>What Our Customers Say</h2>
+    <p>Real reviews from real people</p>
+  </div>
+  <div class="testimonial-grid">
+    <div class="testimonial-card" *ngFor="let t of testimonials">
+      <div class="tc-stars">
+        <i class="bi bi-star-fill" *ngFor="let s of [].constructor(t.rating)"></i>
+        <i class="bi bi-star" *ngFor="let s of [].constructor(5 - t.rating)"></i>
+      </div>
+      <p class="tc-text">"{{ t.text }}"</p>
+      <div class="tc-author">
+        <div class="tc-avatar">{{ t.name.charAt(0) }}</div>
+        <div>
+          <div class="tc-name">{{ t.name }}</div>
+          <div class="tc-role">{{ t.role }}</div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ─── Newsletter ─── -->
+<section class="home-section newsletter-section reveal">
+  <h2>Stay in the Loop</h2>
+  <p>Subscribe for exclusive deals, new arrivals, and 10% off your first order.</p>
+  <div class="newsletter-form">
+    <input type="email" placeholder="Enter your email" [(ngModel)]="email" (keyup.enter)="subscribeNewsletter()">
+    <button (click)="subscribeNewsletter()"><i class="bi bi-send-fill"></i> Subscribe</button>
+  </div>
+  <small style="display: block; margin-top: 1rem; color: rgba(255,255,255,0.4); font-size: 0.75rem; position: relative; z-index: 1;">
+    No spam, unsubscribe anytime.
+  </small>
+</section>
+
+<!-- ─── Brand Partners ─── -->
+<section class="home-section reveal">
+  <div class="section-header">
+    <h2>Trusted By</h2>
+    <p>We partner with the best</p>
+  </div>
+  <div class="brands-strip">
+    <span class="brand-item">TechPro</span>
+    <span class="brand-item">NovaGear</span>
+    <span class="brand-item">PixelCraft</span>
+    <span class="brand-item">Wavetech</span>
+    <span class="brand-item">ApexStore</span>
+    <span class="brand-item">ZenGadgets</span>
+  </div>
+</section>
+
+<!-- ─── Footer ─── -->
+<footer class="home-footer reveal">
+  <div class="home-footer-grid">
+    <div>
+      <div class="footer-brand"><i class="bi bi-shop"></i> AuraStore</div>
+      <p>Your premium destination for tech, gadgets, and lifestyle products. Quality assured with every purchase.</p>
+      <div class="footer-social">
+        <a href="#" aria-label="Facebook"><i class="bi bi-facebook"></i></a>
+        <a href="#" aria-label="Twitter"><i class="bi bi-twitter-x"></i></a>
+        <a href="#" aria-label="Instagram"><i class="bi bi-instagram"></i></a>
+        <a href="#" aria-label="YouTube"><i class="bi bi-youtube"></i></a>
+      </div>
+    </div>
+    <div>
+      <h5>Quick Links</h5>
+      <a routerLink="/products">All Products</a>
+      <a routerLink="/cart">Cart</a>
+      <a routerLink="/checkout">Checkout</a>
+      <a routerLink="/orders">My Orders</a>
+    </div>
+    <div>
+      <h5>Support</h5>
+      <a href="#">Help Center</a>
+      <a href="#">Shipping Info</a>
+      <a href="#">Returns</a>
+      <a href="#">Contact Us</a>
+    </div>
+    <div>
+      <h5>Company</h5>
+      <a href="#">About Us</a>
+      <a href="#">Careers</a>
+      <a [routerLink]="auth.isLoggedIn ? '/admin' : '/login'">Admin</a>
+      <a href="#">Privacy Policy</a>
+    </div>
+  </div>
+  <div class="footer-bottom">
+    &copy; 2026 AuraStore. All rights reserved. Made with <i class="bi bi-heart-fill" style="color: var(--secondary);"></i>
+  </div>
+</footer>

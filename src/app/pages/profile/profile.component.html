@@ -1,0 +1,148 @@
+<div class="row g-4">
+  <!-- Left Column - Profile & Password -->
+  <div class="col-lg-4">
+    <!-- Profile Card -->
+    <div class="details-card mb-4">
+      <div class="p-4 text-center">
+        <div class="profile-avatar mx-auto mb-3">
+          {{ (auth.user?.name || 'U')[0] | uppercase }}
+        </div>
+        <h5 class="fw-bold mb-1">{{ auth.user?.name }}</h5>
+        <p class="mb-0" style="color: var(--text-light); font-size: 0.9rem;">{{ auth.user?.email }}</p>
+        <span class="badge mt-2" [style.background]="auth.isAdmin ? '#6366f1' : '#10b981'" style="padding: 0.3rem 0.8rem;">
+          {{ auth.isAdmin ? 'Admin' : 'Customer' }}
+        </span>
+      </div>
+    </div>
+
+    <!-- Account Details -->
+    <div class="details-card mb-4">
+      <div class="p-3 px-4" style="border-bottom: 1px solid var(--border);">
+        <h5 class="mb-0 fw-bold"><i class="bi bi-person-gear" style="color: var(--primary);"></i> Account Details</h5>
+      </div>
+      <div class="p-4">
+        <div class="mb-3">
+          <label class="form-label" style="font-size: 0.85rem; color: var(--text-light);">Full Name</label>
+          <input class="af-input" [(ngModel)]="profile.name" placeholder="Your name">
+        </div>
+        <div class="mb-3">
+          <label class="form-label" style="font-size: 0.85rem; color: var(--text-light);">Email</label>
+          <input class="af-input" [value]="profile.email" disabled style="opacity: 0.7; cursor: not-allowed;">
+        </div>
+        <div class="mb-3">
+          <label class="form-label" style="font-size: 0.85rem; color: var(--text-light);">Phone</label>
+          <input class="af-input" [(ngModel)]="profile.phone" placeholder="Phone number">
+        </div>
+        <div class="mb-3">
+          <label class="form-label" style="font-size: 0.85rem; color: var(--text-light);">Address</label>
+          <textarea class="af-input af-textarea" [(ngModel)]="profile.address" placeholder="Your address" rows="2"></textarea>
+        </div>
+        <button class="af-btn af-save w-100" (click)="saveProfile()" [disabled]="saving">
+          <i class="bi" [ngClass]="saving ? 'bi-arrow-repeat spin' : 'bi-check-lg'"></i>
+          {{ saving ? 'Saving...' : 'Save Changes' }}
+        </button>
+      </div>
+    </div>
+
+    <!-- Change Password -->
+    <div class="details-card mb-4">
+      <div class="p-3 px-4" style="border-bottom: 1px solid var(--border);">
+        <h5 class="mb-0 fw-bold"><i class="bi bi-shield-lock" style="color: var(--primary);"></i> Change Password</h5>
+      </div>
+      <div class="p-4">
+        <div class="mb-3">
+          <label class="form-label" style="font-size: 0.85rem; color: var(--text-light);">Current Password</label>
+          <input class="af-input" type="password" [(ngModel)]="passwordForm.currentPassword" placeholder="Enter current password">
+        </div>
+        <div class="mb-3">
+          <label class="form-label" style="font-size: 0.85rem; color: var(--text-light);">New Password</label>
+          <input class="af-input" type="password" [(ngModel)]="passwordForm.newPassword" placeholder="Enter new password">
+        </div>
+        <div class="mb-3">
+          <label class="form-label" style="font-size: 0.85rem; color: var(--text-light);">Confirm New Password</label>
+          <input class="af-input" type="password" [(ngModel)]="passwordForm.confirmPassword" placeholder="Confirm new password">
+        </div>
+        <button class="af-btn af-save w-100" (click)="changePassword()" [disabled]="changingPassword">
+          <i class="bi" [ngClass]="changingPassword ? 'bi-arrow-repeat spin' : 'bi-key'"></i>
+          {{ changingPassword ? 'Updating...' : 'Update Password' }}
+        </button>
+      </div>
+    </div>
+
+    <!-- Logout -->
+    <button class="btn w-100 mb-4" style="padding: 0.7rem; border: 1px solid var(--error); color: var(--error); border-radius: var(--radius-md); background: transparent;" (click)="logout()" routerLink="/">
+      <i class="bi bi-box-arrow-right"></i> Sign Out
+    </button>
+  </div>
+
+  <!-- Right Column - Orders & Recently Viewed -->
+  <div class="col-lg-8">
+    <!-- Recent Orders -->
+    <div class="details-card mb-4">
+      <div class="p-3 px-4 d-flex justify-content-between align-items-center" style="border-bottom: 1px solid var(--border);">
+        <h5 class="mb-0 fw-bold"><i class="bi bi-box-seam" style="color: var(--primary);"></i> Recent Orders</h5>
+        <a class="ac-btn" routerLink="/orders" style="font-size: 0.85rem; padding: 0.3rem 0.8rem;">View All</a>
+      </div>
+      <div class="p-4">
+        <div *ngIf="ordersLoading">
+          <div class="skeleton-card mb-3 p-3" *ngFor="let _ of skeletonArray">
+            <div class="skeleton skeleton-text" style="height: 16px; width: 30%;"></div>
+            <div class="skeleton skeleton-text" style="width: 50%; margin-top: 6px;"></div>
+          </div>
+        </div>
+        <div *ngIf="!ordersLoading && orders.length === 0" class="empty-state py-4">
+          <div class="empty-state-icon" style="font-size: 2rem;"><i class="bi bi-receipt"></i></div>
+          <h5 class="mt-2">No orders yet</h5>
+          <a class="btn-custom btn-primary-custom ripple" routerLink="/products"><i class="bi bi-grid-fill"></i> Start Shopping</a>
+        </div>
+        <div *ngFor="let o of orders" class="mb-3 p-3" style="border: 1px solid var(--border); border-radius: var(--radius-md);">
+          <div class="d-flex justify-content-between align-items-start flex-wrap gap-2">
+            <div>
+              <div class="d-flex align-items-center gap-2">
+                <strong style="font-size: 0.9rem;">#{{ o._id?.slice(-8)?.toUpperCase() }}</strong>
+                <span class="badge text-bg-{{ statusBadge(o.status) }}">{{ o.status }}</span>
+              </div>
+              <small style="color: var(--text-light);">{{ o.createdAt | date:'medium' }}</small>
+            </div>
+            <div class="text-end">
+              <div style="font-weight: 700;">{{ o.total | currency:'INR' }}</div>
+              <small style="color: var(--text-light);">{{ o.items?.length }} item(s)</small>
+            </div>
+          </div>
+          <div class="mt-2 d-flex flex-wrap gap-1">
+            <span class="product-category" style="font-size: 0.8rem;" *ngFor="let item of o.items">{{ item.name }} x{{ item.quantity }}</span>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Recently Viewed -->
+    <div class="details-card">
+      <div class="p-3 px-4" style="border-bottom: 1px solid var(--border);">
+        <h5 class="mb-0 fw-bold"><i class="bi bi-clock-history" style="color: var(--primary);"></i> Recently Viewed</h5>
+      </div>
+      <div class="p-4">
+        <div *ngIf="recentlyViewed.length === 0" class="empty-state py-4">
+          <div class="empty-state-icon" style="font-size: 2rem;"><i class="bi bi-eye-slash"></i></div>
+          <h5 class="mt-2">No recently viewed items</h5>
+          <a class="btn-custom btn-primary-custom ripple" routerLink="/products"><i class="bi bi-grid-fill"></i> Browse Products</a>
+        </div>
+        <div class="row g-3" *ngIf="recentlyViewed.length > 0">
+          <div class="col-6 col-md-4" *ngFor="let p of recentlyViewed">
+            <a [routerLink]="['/product', p._id || p.id]" class="text-decoration-none">
+              <div class="product-card-sm">
+                <div class="pcs-img-wrap">
+                  <img [src]="p.image" [alt]="p.name" loading="lazy">
+                </div>
+                <div class="pcs-body">
+                  <span class="pcs-name">{{ p.name }}</span>
+                  <span class="pcs-price">{{ p.price | currency:'INR' }}</span>
+                </div>
+              </div>
+            </a>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>

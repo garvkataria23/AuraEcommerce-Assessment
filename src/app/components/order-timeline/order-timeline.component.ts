@@ -81,24 +81,24 @@ import { CommonModule } from '@angular/common';
       z-index: 2;
       font-size: 16px;
       font-weight: 700;
-      background: #fff;
-      border: 3px solid #d1d5db;
-      color: #9ca3af;
+      background: var(--bg-card);
+      border: 3px solid var(--border);
+      color: var(--text-light);
       transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
-      box-shadow: 0 2px 8px rgba(0,0,0,0.06);
+      box-shadow: var(--shadow-xs);
     }
 
     .step-circle.future {
-      border-color: #d1d5db;
-      color: #9ca3af;
-      background: #fff;
+      border-color: var(--border);
+      color: var(--text-light);
+      background: var(--bg-card);
     }
 
     .step-circle.completed {
-      border-color: #22c55e;
-      background: linear-gradient(135deg, #22c55e, #16a34a);
+      border-color: var(--success);
+      background: linear-gradient(135deg, var(--success), #059669);
       color: #fff;
-      box-shadow: 0 4px 14px rgba(34, 197, 94, 0.35);
+      box-shadow: 0 4px 14px rgba(16,185,129,0.35);
       transform: scale(1);
     }
 
@@ -109,10 +109,10 @@ import { CommonModule } from '@angular/common';
     }
 
     .step-circle.active {
-      border-color: #3b82f6;
-      color: #3b82f6;
-      background: #fff;
-      box-shadow: 0 0 0 4px rgba(59, 130, 246, 0.15);
+      border-color: var(--primary);
+      color: var(--primary);
+      background: var(--bg-card);
+      box-shadow: 0 0 0 4px rgba(108,99,255,0.15);
       animation: activePulse 2s ease-in-out infinite;
     }
 
@@ -127,35 +127,35 @@ import { CommonModule } from '@angular/common';
       right: -6px;
       bottom: -6px;
       border-radius: 50%;
-      border: 3px solid #3b82f6;
+      border: 3px solid var(--primary);
       animation: ringPulse 2s ease-in-out infinite;
       pointer-events: none;
     }
 
     .step-circle.cancelled {
-      border-color: #ef4444;
-      color: #ef4444;
-      background: #fff;
-      box-shadow: 0 0 0 4px rgba(239, 68, 68, 0.15);
+      border-color: var(--error);
+      color: var(--error);
+      background: var(--bg-card);
+      box-shadow: 0 0 0 4px rgba(239,68,68,0.15);
       animation: cancelledShake 0.5s ease-in-out;
     }
 
     .step-circle.cancelled .cancel-icon {
       font-size: 20px;
-      color: #ef4444;
+      color: var(--error);
       animation: cancelFadeIn 0.4s ease-out;
     }
 
     .step-circle.cancelled-all {
-      border-color: #d1d5db;
-      color: #9ca3af;
-      background: #f9fafb;
+      border-color: var(--border);
+      color: var(--text-light);
+      background: var(--bg-main);
     }
 
     .connector {
       flex: 1;
       height: 4px;
-      background: #e5e7eb;
+      background: var(--border);
       border-radius: 2px;
       position: relative;
       overflow: hidden;
@@ -166,7 +166,7 @@ import { CommonModule } from '@angular/common';
       height: 100%;
       width: 0%;
       border-radius: 2px;
-      background: linear-gradient(90deg, #22c55e, #16a34a);
+      background: linear-gradient(90deg, var(--success), #059669);
       transition: width 0.6s cubic-bezier(0.4, 0, 0.2, 1);
     }
 
@@ -184,19 +184,19 @@ import { CommonModule } from '@angular/common';
     }
 
     .label-completed {
-      color: #16a34a;
+      color: var(--success);
     }
 
     .label-active {
-      color: #2563eb;
+      color: var(--primary);
     }
 
     .label-future {
-      color: #9ca3af;
+      color: var(--text-light);
     }
 
     .label-cancelled {
-      color: #9ca3af;
+      color: var(--text-light);
     }
 
     .cancelled-banner {
@@ -206,10 +206,10 @@ import { CommonModule } from '@angular/common';
       gap: 10px;
       margin-top: 20px;
       padding: 12px 24px;
-      background: linear-gradient(135deg, #fef2f2, #fee2e2);
-      border: 1px solid #fecaca;
+      background: linear-gradient(135deg, rgba(239,68,68,0.1), rgba(239,68,68,0.05));
+      border: 1px solid rgba(239,68,68,0.2);
       border-radius: 12px;
-      color: #dc2626;
+      color: var(--error);
       font-size: 15px;
       font-weight: 700;
       animation: bannerSlide 0.4s ease-out;
@@ -217,16 +217,16 @@ import { CommonModule } from '@angular/common';
 
     .cancelled-banner i {
       font-size: 20px;
-      color: #ef4444;
+      color: var(--error);
     }
 
     @keyframes activePulse {
       0%, 100% {
-        box-shadow: 0 0 0 4px rgba(59, 130, 246, 0.15);
+        box-shadow: 0 0 0 4px rgba(108,99,255,0.15);
         transform: scale(1);
       }
       50% {
-        box-shadow: 0 0 0 8px rgba(59, 130, 246, 0.08), 0 0 0 16px rgba(59, 130, 246, 0.04);
+        box-shadow: 0 0 0 8px rgba(108,99,255,0.08), 0 0 0 16px rgba(108,99,255,0.04);
         transform: scale(1.03);
       }
     }
