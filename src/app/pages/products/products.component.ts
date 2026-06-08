@@ -1,7 +1,8 @@
-import { Component } from '@angular/core';
+import { Component, OnInit } from '@angular/core';
 import { CommonModule, CurrencyPipe } from '@angular/common';
 import { RouterLink } from '@angular/router';
 import { trigger, transition, style, animate, query, stagger } from '@angular/animations';
+import { FormsModule } from '@angular/forms';
 import { ProductService } from '../../services/product.service';
 import { CartService } from '../../services/cart.service';
 import { ToastService } from '../../services/toast.service';
@@ -10,8 +11,8 @@ import { Product } from '../../models/product.model';
 const cardStagger = trigger('cardStagger', [
   transition('* => *', [
     query(':enter', [
-      style({ opacity: 0, transform: 'translateY(24px)' }),
-      stagger('70ms', [animate('0.4s ease-out', style({ opacity: 1, transform: 'translateY(0)' }))])
+      style({ opacity: 0, transform: 'translateY(30px)' }),
+      stagger('60ms', [animate('0.4s ease-out', style({ opacity: 1, transform: 'translateY(0)' }))])
     ], { optional: true })
   ])
 ]);
@@ -19,23 +20,112 @@ const cardStagger = trigger('cardStagger', [
 @Component({
   selector: 'app-products',
   standalone: true,
-  imports: [CommonModule, RouterLink, CurrencyPipe],
+  imports: [CommonModule, RouterLink, CurrencyPipe, FormsModule],
   templateUrl: './products.component.html',
   animations: [cardStagger]
 })
-export class ProductsComponent {
+export class ProductsComponent implements OnInit {
   products: Product[] = [];
+  filteredProducts: Product[] = [];
+  loading = true;
+  searchTerm = '';
+  selectedCategory = 'All';
+  sortBy = 'default';
+  wishlist: Set<string> = new Set();
 
   constructor(
     private productService: ProductService,
-    private cartService: CartService,
+    public cartService: CartService,
     private toastService: ToastService
   ) {
-    this.productService.getProducts().subscribe(data => this.products = data);
+    const saved = localStorage.getItem('wishlist');
+    if (saved) this.wishlist = new Set(JSON.parse(saved));
   }
 
-  addToCart(product: Product): void {
+  ngOnInit() {
+    this.productService.getProducts().subscribe({
+      next: (data) => {
+        this.products = data;
+        this.filteredProducts = data;
+        this.loading = false;
+      },
+      error: () => {
+        this.loading = false;
+        this.toastService.show('Failed to load products', 'error');
+      }
+    });
+  }
+
+  get categories(): string[] {
+    const cats = new Set(this.products.map(p => p.category));
+    return ['All', ...Array.from(cats)];
+  }
+
+  filterProducts() {
+    let result = [...this.products];
+
+    if (this.selectedCategory !== 'All') {
+      result = result.filter(p => p.category === this.selectedCategory);
+    }
+
+    if (this.searchTerm.trim()) {
+      const term = this.searchTerm.toLowerCase().trim();
+      result = result.filter(p =>
+        p.name.toLowerCase().includes(term) ||
+        p.description.toLowerCase().includes(term) ||
+        p.category.toLowerCase().includes(term)
+      );
+    }
+
+    switch (this.sortBy) {
+      case 'price-low':
+        result.sort((a, b) => a.price - b.price);
+        break;
+      case 'price-high':
+        result.sort((a, b) => b.price - a.price);
+        break;
+      case 'name':
+        result.sort((a, b) => a.name.localeCompare(b.name));
+        break;
+    }
+
+    this.filteredProducts = result;
+  }
+
+  onSearchChange() {
+    this.filterProducts();
+  }
+
+  onCategoryChange(category: string) {
+    this.selectedCategory = category;
+    this.filterProducts();
+  }
+
+  onSortChange() {
+    this.filterProducts();
+  }
+
+  toggleWishlist(product: Product) {
+    if (this.wishlist.has(product.id)) {
+      this.wishlist.delete(product.id);
+      this.toastService.show(product.name + ' removed from wishlist', 'info');
+    } else {
+      this.wishlist.add(product.id);
+      this.toastService.show(product.name + ' added to wishlist', 'success');
+    }
+    localStorage.setItem('wishlist', JSON.stringify([...this.wishlist]));
+  }
+
+  isInWishlist(id: string): boolean {
+    return this.wishlist.has(id);
+  }
+
+  addToCart(product: Product) {
     this.cartService.addToCart(product);
     this.toastService.show(product.name + ' added to cart', 'success');
+  }
+
+  get skeletonArray() {
+    return Array(4);
   }
 }

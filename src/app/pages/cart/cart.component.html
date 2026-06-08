@@ -1,49 +1,113 @@
-<div class="card shadow-sm">
-  <div class="card-header bg-dark text-white d-flex justify-content-between align-items-center">
-    <h4 class="mb-0">Shopping Cart</h4>
-    <a class="btn btn-light btn-sm" routerLink="/products">Continue Shopping</a>
+<div class="row g-4">
+  <div class="col-lg-8">
+    <div class="details-card">
+      <div class="d-flex justify-content-between align-items-center p-3 px-4" style="border-bottom: 1px solid var(--border);">
+        <h4 class="mb-0" style="font-weight: 700;">
+          <i class="bi bi-cart-fill" style="color: var(--primary);"></i> Shopping Cart
+          <span style="font-size: 0.9rem; color: var(--text-light); font-weight: 400;" *ngIf="cartService.getItems().length > 0">
+            ({{ cartService.getItems().length }} items)
+          </span>
+        </h4>
+        <a class="btn-custom btn-outline-custom" routerLink="/products">
+          <i class="bi bi-arrow-left"></i> Continue
+        </a>
+      </div>
+
+      <!-- Empty State -->
+      <div class="empty-state" *ngIf="cartService.getItems().length === 0">
+        <div class="empty-state-icon"><i class="bi bi-cart-x"></i></div>
+        <h4>Your cart is empty</h4>
+        <p>Looks like you haven't added anything yet. Browse our products and find something you love!</p>
+        <a class="btn-custom btn-primary-custom" routerLink="/products">
+          <i class="bi bi-grid-fill"></i> Browse Products
+        </a>
+      </div>
+
+      <!-- Cart Items -->
+      <div class="table-responsive" *ngIf="cartService.getItems().length > 0">
+        <table class="cart-table">
+          <thead>
+            <tr>
+              <th>Product</th>
+              <th>Price</th>
+              <th>Quantity</th>
+              <th>Subtotal</th>
+              <th></th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr *ngFor="let item of cartService.getItems()" @fadeIn>
+              <td>
+                <div class="d-flex align-items-center gap-3">
+                  <img [src]="item.product.image" class="cart-item-image" [alt]="item.product.name">
+                  <div>
+                    <div style="font-weight: 600; color: var(--text-primary);">{{ item.product.name }}</div>
+                    <small style="color: var(--text-light);">{{ item.product.category }}</small>
+                  </div>
+                </div>
+              </td>
+              <td style="font-weight: 600;">{{ item.product.price | currency:'INR' }}</td>
+              <td>
+                <div class="quantity-stepper">
+                  <button (click)="decreaseQty(item.product.id, item.quantity)">
+                    <i class="bi bi-dash"></i>
+                  </button>
+                  <input type="text" [value]="item.quantity" readonly>
+                  <button (click)="increaseQty(item.product.id, item.quantity)">
+                    <i class="bi bi-plus"></i>
+                  </button>
+                </div>
+              </td>
+              <td style="font-weight: 700; color: var(--primary);">
+                {{ item.product.price * item.quantity | currency:'INR' }}
+              </td>
+              <td>
+                <button class="btn-custom btn-danger-custom" style="padding: 0.4rem 0.8rem; font-size: 0.8rem;"
+                  (click)="removeItem(item.product.id, item.product.name)">
+                  <i class="bi bi-trash"></i>
+                </button>
+              </td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
   </div>
 
-  <div class="card-body">
-    <div class="alert alert-info" *ngIf="cartService.getItems().length === 0">
-      Cart is empty. <a routerLink="/products">Add products</a>
-    </div>
+  <!-- Order Summary Sidebar -->
+  <div class="col-lg-4" *ngIf="cartService.getItems().length > 0">
+    <div class="cart-summary">
+      <h5 style="font-weight: 700; margin-bottom: 1rem;">
+        <i class="bi bi-receipt" style="color: var(--primary);"></i> Order Summary
+      </h5>
 
-    <div class="table-responsive" *ngIf="cartService.getItems().length > 0">
-      <table class="table table-bordered align-middle">
-        <thead class="table-light">
-          <tr>
-            <th>Product</th>
-            <th>Price</th>
-            <th style="width: 150px;">Quantity</th>
-            <th>Subtotal</th>
-            <th>Action</th>
-          </tr>
-        </thead>
-
-        <tbody>
-          <tr *ngFor="let item of cartService.getItems()" [@itemRemove]>
-            <td>{{ item.product.name }}</td>
-            <td>{{ item.product.price | currency:'INR' }}</td>
-            <td>
-              <input type="number" min="1" class="form-control quantity-input"
-                [value]="item.quantity"
-                (change)="updateQuantity(item.product.id, $event)">
-            </td>
-            <td>{{ item.product.price * item.quantity | currency:'INR' }}</td>
-            <td>
-              <button class="btn btn-danger btn-sm btn-hover-scale" (click)="removeItem(item.product.id, item.product.name)">
-                Remove
-              </button>
-            </td>
-          </tr>
-        </tbody>
-      </table>
-
-      <div class="text-end">
-        <h4 [@totalUpdate]="cartService.getTotal()">Total: {{ cartService.getTotal() | currency:'INR' }}</h4>
-        <a class="btn btn-success btn-hover-scale" routerLink="/checkout">Proceed to Checkout</a>
+      <div class="cart-summary-line">
+        <span>Subtotal</span>
+        <span style="font-weight: 600;">{{ subtotal | currency:'INR' }}</span>
       </div>
+      <div class="cart-summary-line">
+        <span>Shipping</span>
+        <span style="font-weight: 600;">
+          {{ shipping === 0 ? 'FREE' : (shipping | currency:'INR') }}
+        </span>
+      </div>
+      <div class="cart-summary-line">
+        <span>Tax (8%)</span>
+        <span style="font-weight: 600;">{{ tax | currency:'INR' }}</span>
+      </div>
+
+      <div class="cart-summary-total">
+        <span>Total</span>
+        <span style="color: var(--primary);">{{ total | currency:'INR' }}</span>
+      </div>
+
+      <small style="display: block; color: var(--text-light); margin: 0.75rem 0; font-size: 0.8rem;">
+        <i class="bi bi-truck"></i> Free shipping on orders above ₹50,000
+      </small>
+
+      <a class="btn-custom btn-success-custom w-100 text-center" routerLink="/checkout" style="margin-top: 0.5rem; padding: 0.9rem;">
+        <i class="bi bi-lock-fill"></i> Proceed to Checkout
+      </a>
     </div>
   </div>
 </div>

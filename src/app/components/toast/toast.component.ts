@@ -8,34 +8,32 @@ import { ToastService, ToastMessage } from '../../services/toast.service';
   standalone: true,
   imports: [CommonModule],
   template: `
-    <div class="toast-container position-fixed top-0 end-0 p-3" style="z-index: 9999">
+    <div class="toast-container-modern">
       <div *ngFor="let toast of messages"
-        [@toastAnimation]="'in'"
-        class="toast-notification alert d-flex align-items-center mb-2 shadow-lg border-0"
-        [class.alert-success]="toast.type === 'success'"
-        [class.alert-danger]="toast.type === 'error'"
-        [class.alert-info]="toast.type === 'info'"
-        role="alert">
-        <span class="me-2">
-          <ng-container [ngSwitch]="toast.type">
-            <span *ngSwitchCase="'success'">&#10003;</span>
-            <span *ngSwitchCase="'error'">&#10007;</span>
-            <span *ngSwitchCase="'info'">&#9432;</span>
-          </ng-container>
-        </span>
+        [@toastAnim]="'in'"
+        class="toast-modern"
+        [class.toast-success]="toast.type === 'success'"
+        [class.toast-error]="toast.type === 'error'"
+        [class.toast-info]="toast.type === 'info'">
+        <i class="bi"
+          [ngClass]="{
+            'bi-check-circle-fill': toast.type === 'success',
+            'bi-x-circle-fill': toast.type === 'error',
+            'bi-info-circle-fill': toast.type === 'info'
+          }"></i>
         {{ toast.text }}
-        <button type="button" class="btn-close ms-2" (click)="dismiss(toast.id)"></button>
+        <button class="toast-close" (click)="dismiss(toast.id)">&times;</button>
       </div>
     </div>
   `,
   animations: [
-    trigger('toastAnimation', [
+    trigger('toastAnim', [
       transition(':enter', [
-        style({ opacity: 0, transform: 'translateX(100%)' }),
-        animate('0.3s ease-out', style({ opacity: 1, transform: 'translateX(0)' }))
+        style({ opacity: 0, transform: 'translateX(120%) scale(0.9)' }),
+        animate('0.35s cubic-bezier(0.68, -0.55, 0.265, 1.55)', style({ opacity: 1, transform: 'translateX(0) scale(1)' }))
       ]),
       transition(':leave', [
-        animate('0.2s ease-in', style({ opacity: 0, transform: 'translateX(100%)' }))
+        animate('0.2s ease-in', style({ opacity: 0, transform: 'translateX(80%)' }))
       ])
     ])
   ]

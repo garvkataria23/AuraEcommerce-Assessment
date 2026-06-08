@@ -11,10 +11,12 @@ import { RouterLink } from '@angular/router';
 })
 export class LoginComponent {
   submitted = false;
+  showPassword = false;
 
   loginForm = this.fb.group({
     email: ['', [Validators.required, Validators.email]],
-    password: ['', [Validators.required]]
+    password: ['', [Validators.required, Validators.minLength(6)]],
+    remember: [false]
   });
 
   constructor(private fb: FormBuilder) {}
@@ -23,11 +25,9 @@ export class LoginComponent {
     return this.loginForm.controls;
   }
 
-  login(): void {
+  login() {
     this.submitted = true;
-    if (this.loginForm.invalid) {
-      return;
-    }
-    alert('Login page validation successful.');
+    if (this.loginForm.invalid) return;
+    alert('Login successful! (Demo)');
   }
 }

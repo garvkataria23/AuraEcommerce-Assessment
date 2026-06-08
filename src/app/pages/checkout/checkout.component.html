@@ -1,72 +1,200 @@
-<div class="row g-4">
+<div class="row g-4" *ngIf="!orderPlaced">
   <div class="col-lg-7">
-    <div class="card shadow-sm">
-      <div class="card-header bg-success text-white">
-        <h4 class="mb-0">Checkout</h4>
+    <div class="checkout-card">
+      <div class="checkout-header">
+        <h4 class="mb-0"><i class="bi bi-credit-card-fill"></i> Checkout</h4>
+        <small style="opacity: 0.8;">Complete your order</small>
       </div>
-
-      <div class="card-body">
-        <div class="alert alert-success text-center" *ngIf="orderPlaced" @checkmarkAnim>
-          <svg class="checkmark-circle mb-2" width="64" height="64" viewBox="0 0 52 52">
-            <circle cx="26" cy="26" r="24" fill="none" stroke="#198754" stroke-width="3"/>
-            <path class="checkmark-check" d="M14 27l7 7 16-16" fill="none" stroke="#198754" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/>
-          </svg>
-          <h5 class="mb-0">Order placed successfully!</h5>
-        </div>
-
+      <div class="checkout-body">
         <form [formGroup]="checkoutForm" (ngSubmit)="placeOrder()">
-          <div class="mb-3" [@shakeTrigger]="shakeState">
-            <label class="form-label">Customer Name</label>
-            <input class="form-control" formControlName="customerName"
-              [class.is-invalid]="submitted && f.customerName.errors">
-            <div class="invalid-feedback">
-              <span *ngIf="f.customerName.errors?.required">Customer name is required.</span>
-              <span *ngIf="f.customerName.errors?.minlength">Customer name must be at least 3 characters.</span>
+          <div class="row g-3">
+            <div class="col-12">
+              <label class="form-label-custom">Full Name</label>
+              <input class="form-control-custom" formControlName="customerName"
+                placeholder="Enter your full name"
+                [class.is-invalid]="submitted && f.customerName.errors">
+              <div class="invalid-feedback" *ngIf="submitted && f.customerName.errors?.required">
+                Name is required
+              </div>
+              <div class="invalid-feedback" *ngIf="submitted && f.customerName.errors?.minlength">
+                Name must be at least 3 characters
+              </div>
+            </div>
+
+            <div class="col-md-6">
+              <label class="form-label-custom">Email</label>
+              <input class="form-control-custom" formControlName="email"
+                placeholder="email@example.com"
+                [class.is-invalid]="submitted && f.email.errors">
+            </div>
+
+            <div class="col-md-6">
+              <label class="form-label-custom">Mobile Number</label>
+              <input class="form-control-custom" formControlName="mobile"
+                placeholder="10-digit mobile number"
+                [class.is-invalid]="submitted && f.mobile.errors">
+              <div class="invalid-feedback" *ngIf="submitted && f.mobile.errors">
+                Valid 10-digit mobile number is required
+              </div>
+            </div>
+
+            <div class="col-12">
+              <label class="form-label-custom">Address</label>
+              <textarea class="form-control-custom" formControlName="address"
+                rows="3" placeholder="Street, building, apartment"
+                [class.is-invalid]="submitted && f.address.errors"></textarea>
+              <div class="invalid-feedback" *ngIf="submitted && f.address.errors">
+                Address is required
+              </div>
+            </div>
+
+            <div class="col-md-6">
+              <label class="form-label-custom">City</label>
+              <input class="form-control-custom" formControlName="city"
+                placeholder="City"
+                [class.is-invalid]="submitted && f.city.errors">
+              <div class="invalid-feedback" *ngIf="submitted && f.city.errors">
+                City is required
+              </div>
+            </div>
+
+            <div class="col-md-6">
+              <label class="form-label-custom">Pincode</label>
+              <input class="form-control-custom" formControlName="pincode"
+                placeholder="6-digit pincode"
+                [class.is-invalid]="submitted && f.pincode.errors">
+              <div class="invalid-feedback" *ngIf="submitted && f.pincode.errors">
+                Valid 6-digit pincode is required
+              </div>
+            </div>
+
+            <!-- Payment Method -->
+            <div class="col-12">
+              <label class="form-label-custom">Payment Method</label>
+              <div class="d-flex gap-3 flex-wrap">
+                <label class="d-flex align-items-center gap-2 p-3" style="border: 2px solid var(--border); border-radius: var(--radius-sm); cursor: pointer; flex: 1; min-width: 140px; transition: var(--transition);"
+                  [style.border-color]="selectedPayment === 'cod' ? 'var(--success)' : 'var(--border)'"
+                  [style.background]="selectedPayment === 'cod' ? 'rgba(16,185,129,0.06)' : 'transparent'">
+                  <input type="radio" name="payment" value="cod" [(ngModel)]="selectedPayment" style="accent-color: var(--success);">
+                  <div>
+                    <div style="font-weight: 600; font-size: 0.9rem;">Cash on Delivery</div>
+                    <small style="color: var(--text-light);">Pay when you receive</small>
+                  </div>
+                </label>
+                <label class="d-flex align-items-center gap-2 p-3" style="border: 2px solid var(--border); border-radius: var(--radius-sm); cursor: pointer; flex: 1; min-width: 140px; transition: var(--transition); opacity: 0.5; pointer-events: none;">
+                  <input type="radio" name="payment" value="online" disabled>
+                  <div>
+                    <div style="font-weight: 600; font-size: 0.9rem;">Online Payment</div>
+                    <small style="color: var(--text-light);">Coming soon</small>
+                  </div>
+                </label>
+              </div>
             </div>
           </div>
 
-          <div class="mb-3" [@shakeTrigger]="shakeState">
-            <label class="form-label">Address</label>
-            <textarea class="form-control" rows="3" formControlName="address"
-              [class.is-invalid]="submitted && f.address.errors"></textarea>
-            <div class="invalid-feedback">Address is required.</div>
+          <div class="mt-4" [@shakeTrigger]="shakeState">
+            <button class="btn-custom btn-success-custom w-100 text-center" style="padding: 1rem; font-size: 1.05rem;"
+              [disabled]="cartService.getItems().length === 0">
+              <i class="bi bi-lock-fill"></i> Place Order — {{ total | currency:'INR' }}
+            </button>
+            <a class="btn-custom btn-outline-custom w-100 text-center mt-2" routerLink="/cart">
+              <i class="bi bi-arrow-left"></i> Back to Cart
+            </a>
           </div>
-
-          <div class="mb-3" [@shakeTrigger]="shakeState">
-            <label class="form-label">Mobile Number</label>
-            <input class="form-control" formControlName="mobile"
-              [class.is-invalid]="submitted && f.mobile.errors">
-            <div class="invalid-feedback">Mobile number must be exactly 10 digits.</div>
-          </div>
-
-          <button class="btn btn-success btn-hover-scale" [disabled]="cartService.getItems().length === 0">
-            Place Order
-          </button>
-          <a class="btn btn-link" routerLink="/cart">Back to Cart</a>
         </form>
       </div>
     </div>
   </div>
 
+  <!-- Order Summary -->
   <div class="col-lg-5">
-    <div class="card shadow-sm">
-      <div class="card-header">
-        <h5 class="mb-0">Order Summary</h5>
+    <div class="checkout-card">
+      <div class="p-3 px-4" style="border-bottom: 1px solid var(--border);">
+        <h5 class="mb-0" style="font-weight: 700;">
+          <i class="bi bi-receipt" style="color: var(--primary);"></i> Order Summary
+        </h5>
       </div>
-
-      <div class="card-body">
-        <div *ngIf="cartService.getItems().length === 0" class="text-muted">
-          No items in cart.
+      <div class="p-4">
+        <div *ngIf="cartService.getItems().length === 0" class="text-center py-3" style="color: var(--text-light);">
+          <i class="bi bi-cart-x fs-2"></i>
+          <p class="mt-2">No items in cart.</p>
         </div>
 
-        <ul class="list-group mb-3" *ngIf="cartService.getItems().length > 0">
-          <li class="list-group-item d-flex justify-content-between" *ngFor="let item of cartService.getItems()">
-            <span>{{ item.product.name }} x {{ item.quantity }}</span>
-            <strong>{{ item.product.price * item.quantity | currency:'INR' }}</strong>
-          </li>
-        </ul>
+        <div *ngIf="cartService.getItems().length > 0">
+          <div class="order-summary-item" *ngFor="let item of cartService.getItems()">
+            <div>
+              <div class="order-summary-name">{{ item.product.name }}</div>
+              <div class="order-summary-qty">Qty: {{ item.quantity }}</div>
+            </div>
+            <div class="order-summary-price">
+              {{ item.product.price * item.quantity | currency:'INR' }}
+            </div>
+          </div>
+        </div>
 
-        <h5>Total: {{ cartService.getTotal() | currency:'INR' }}</h5>
+        <div class="mt-3" style="border-top: 1px solid var(--border); padding-top: 1rem;">
+          <div class="cart-summary-line">
+            <span>Subtotal</span>
+            <span style="font-weight: 600;">{{ subtotal | currency:'INR' }}</span>
+          </div>
+          <div class="cart-summary-line">
+            <span>Shipping</span>
+            <span style="font-weight: 600;">
+              {{ shipping === 0 ? 'FREE' : (shipping | currency:'INR') }}
+            </span>
+          </div>
+          <div class="cart-summary-line">
+            <span>Tax (8%)</span>
+            <span style="font-weight: 600;">{{ tax | currency:'INR' }}</span>
+          </div>
+          <div class="cart-summary-total">
+            <span>Total</span>
+            <span style="color: var(--success);">{{ total | currency:'INR' }}</span>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Trust Badges -->
+    <div class="checkout-card mt-3">
+      <div class="p-4">
+        <div class="d-flex align-items-center gap-3 mb-2">
+          <i class="bi bi-shield-check fs-3" style="color: var(--success);"></i>
+          <div>
+            <div style="font-weight: 600; font-size: 0.9rem;">Secure Checkout</div>
+            <small style="color: var(--text-light);">Your information is protected</small>
+          </div>
+        </div>
+        <div class="d-flex align-items-center gap-3">
+          <i class="bi bi-truck fs-3" style="color: var(--primary);"></i>
+          <div>
+            <div style="font-weight: 600; font-size: 0.9rem;">Free Shipping</div>
+            <small style="color: var(--text-light);">On orders above ₹50,000</small>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Order Success -->
+<div class="row justify-content-center" *ngIf="orderPlaced">
+  <div class="col-md-6">
+    <div class="checkout-card text-center">
+      <div class="p-5">
+        <div class="success-check">
+          <i class="bi bi-check-lg"></i>
+        </div>
+        <h3 class="fw-bold mt-3" style="color: var(--text-primary);">Order Placed!</h3>
+        <p style="color: var(--text-secondary);">Your order has been placed successfully. You will receive a confirmation soon.</p>
+        <div class="d-flex gap-2 justify-content-center mt-4">
+          <a class="btn-custom btn-primary-custom" routerLink="/products">
+            <i class="bi bi-grid-fill"></i> Continue Shopping
+          </a>
+          <a class="btn-custom btn-outline-custom" routerLink="/products">
+            View Orders
+          </a>
+        </div>
       </div>
     </div>
   </div>

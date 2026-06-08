@@ -1,28 +1,103 @@
-<div *ngIf="product; else notFound" @fadeIn class="card shadow-sm">
-  <div class="row g-0">
-    <div class="col-md-5">
-      <div class="product-card-wrap">
-        <img [src]="product.image" class="img-fluid rounded-start w-100 product-img" [alt]="product.name">
+<div *ngIf="product; else notFound">
+  <!-- Breadcrumbs -->
+  <nav class="breadcrumbs">
+    <a routerLink="/products">Products</a>
+    <span class="separator"><i class="bi bi-chevron-right"></i></span>
+    <a routerLink="/products" [queryParams]="{category: product.category}">{{ product.category }}</a>
+    <span class="separator"><i class="bi bi-chevron-right"></i></span>
+    <span class="current">{{ product.name }}</span>
+  </nav>
+
+  <!-- Product Details -->
+  <div class="details-card" @fadeIn>
+    <div class="row g-0">
+      <div class="col-md-5">
+        <div class="details-image-wrap">
+          <img [src]="product.image" class="details-image" [alt]="product.name">
+        </div>
+      </div>
+      <div class="col-md-7">
+        <div class="details-body">
+          <span class="details-category">{{ product.category }}</span>
+          <h1 class="details-title">{{ product.name }}</h1>
+          <div class="details-price">{{ product.price | currency:'INR' }}</div>
+          <p class="details-description">{{ product.description }}</p>
+
+          <div class="details-meta">
+            <div class="details-meta-item">
+              <span class="details-meta-label">Category</span>
+              <span class="details-meta-value">{{ product.category }}</span>
+            </div>
+            <div class="details-meta-item">
+              <span class="details-meta-label">Availability</span>
+              <span class="details-meta-value" style="color: var(--success);">
+                <i class="bi bi-check-circle-fill"></i> In Stock
+              </span>
+            </div>
+            <div class="details-meta-item">
+              <span class="details-meta-label">SKU</span>
+              <span class="details-meta-value">#{{ product.id.slice(-6).toUpperCase() }}</span>
+            </div>
+          </div>
+
+          <!-- Quantity + Add to Cart -->
+          <div class="d-flex align-items-center gap-3 flex-wrap mb-3">
+            <div class="quantity-stepper">
+              <button (click)="decreaseQty()"><i class="bi bi-dash"></i></button>
+              <input type="text" [(ngModel)]="quantity" readonly>
+              <button (click)="increaseQty()"><i class="bi bi-plus"></i></button>
+            </div>
+          </div>
+
+          <div class="d-flex gap-2 flex-wrap">
+            <button class="btn-custom btn-primary-custom" style="padding: 0.8rem 2rem; font-size: 1rem;" (click)="addToCart()">
+              <i class="bi bi-cart-plus"></i> Add to Cart — {{ product.price * quantity | currency:'INR' }}
+            </button>
+            <a class="btn-custom btn-outline-custom" routerLink="/products">
+              <i class="bi bi-arrow-left"></i> Back
+            </a>
+          </div>
+        </div>
       </div>
     </div>
+  </div>
 
-    <div class="col-md-7">
-      <div class="card-body">
-        <span class="badge text-bg-secondary mb-2">{{ product.category }}</span>
-        <h2>{{ product.name }}</h2>
-        <p class="text-muted">{{ product.description }}</p>
-        <h3 class="text-primary">{{ product.price | currency:'INR' }}</h3>
-
-        <button class="btn btn-primary me-2 btn-hover-scale" (click)="addToCart()">Add to Cart</button>
-        <a class="btn btn-outline-secondary btn-hover-scale" routerLink="/products">Back to Products</a>
+  <!-- Related Products -->
+  <div class="mt-5" *ngIf="relatedProducts.length > 0">
+    <h3 class="section-title">Related Products</h3>
+    <p class="section-subtitle">More items in {{ product.category }}</p>
+    <div class="product-grid">
+      <div class="product-card" *ngFor="let item of relatedProducts">
+        <div class="product-image-wrap">
+          <img [src]="item.image" class="product-image" [alt]="item.name" loading="lazy">
+        </div>
+        <div class="product-body">
+          <span class="product-category">{{ item.category }}</span>
+          <h5 class="product-name">{{ item.name }}</h5>
+          <div class="product-price">{{ item.price | currency:'INR' }}</div>
+          <div class="product-card-footer">
+            <button class="btn-custom btn-primary-custom" (click)="addRelatedToCart(item)">
+              <i class="bi bi-cart-plus"></i> Add
+            </button>
+            <a class="btn-custom btn-outline-custom" [routerLink]="['/product', item.id]">
+              <i class="bi bi-eye"></i>
+            </a>
+          </div>
+        </div>
       </div>
     </div>
   </div>
 </div>
 
 <ng-template #notFound>
-  <div class="alert alert-danger">
-    Product not found.
-    <a routerLink="/products">Back to products</a>
+  <div class="details-card p-5 text-center">
+    <div class="empty-state">
+      <div class="empty-state-icon"><i class="bi bi-exclamation-triangle"></i></div>
+      <h4>Product not found</h4>
+      <p>The product you're looking for doesn't exist or has been removed.</p>
+      <a class="btn-custom btn-primary-custom" routerLink="/products">
+        <i class="bi bi-arrow-left"></i> Back to Products
+      </a>
+    </div>
   </div>
 </ng-template>

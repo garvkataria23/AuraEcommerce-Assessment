@@ -2,6 +2,7 @@ import { Component } from '@angular/core';
 import { CommonModule, CurrencyPipe } from '@angular/common';
 import { FormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
 import { RouterLink } from '@angular/router';
+import { FormsModule } from '@angular/forms';
 import { trigger, transition, style, animate, keyframes } from '@angular/animations';
 import { CartService } from '../../services/cart.service';
 import { OrderService } from '../../services/order.service';
@@ -22,29 +23,26 @@ const shakeTrigger = trigger('shakeTrigger', [
   ])
 ]);
 
-const checkmarkAnim = trigger('checkmarkAnim', [
-  transition(':enter', [
-    style({ opacity: 0, transform: 'scale(0.5)' }),
-    animate('0.4s ease-out', style({ opacity: 1, transform: 'scale(1)' }))
-  ])
-]);
-
 @Component({
   selector: 'app-checkout',
   standalone: true,
-  imports: [CommonModule, ReactiveFormsModule, RouterLink, CurrencyPipe],
+  imports: [CommonModule, ReactiveFormsModule, FormsModule, RouterLink, CurrencyPipe],
   templateUrl: './checkout.component.html',
-  animations: [shakeTrigger, checkmarkAnim]
+  animations: [shakeTrigger]
 })
 export class CheckoutComponent {
   submitted = false;
   orderPlaced = false;
   shakeState = '';
+  selectedPayment = 'cod';
 
   checkoutForm = this.fb.group({
     customerName: ['', [Validators.required, Validators.minLength(3)]],
     address: ['', [Validators.required]],
-    mobile: ['', [Validators.required, Validators.pattern('^[0-9]{10}$')]]
+    mobile: ['', [Validators.required, Validators.pattern('^[0-9]{10}$')]],
+    email: ['', [Validators.email]],
+    city: ['', [Validators.required]],
+    pincode: ['', [Validators.required, Validators.pattern('^[0-9]{6}$')]]
   });
 
   constructor(
@@ -58,7 +56,23 @@ export class CheckoutComponent {
     return this.checkoutForm.controls;
   }
 
-  placeOrder(): void {
+  get subtotal() {
+    return this.cartService.getTotal();
+  }
+
+  get shipping() {
+    return this.subtotal > 50000 ? 0 : 499;
+  }
+
+  get tax() {
+    return Math.round(this.subtotal * 0.08);
+  }
+
+  get total() {
+    return this.subtotal + this.tax + this.shipping;
+  }
+
+  placeOrder() {
     this.submitted = true;
 
     if (this.checkoutForm.invalid || this.cartService.getItems().length === 0) {
@@ -73,14 +87,12 @@ export class CheckoutComponent {
       quantity: item.quantity
     }));
 
-    const total = this.cartService.getTotal();
-
     this.orderService.placeOrder({
       customerName: this.checkoutForm.value.customerName!,
-      address: this.checkoutForm.value.address!,
+      address: this.checkoutForm.value.address! + ', ' + this.checkoutForm.value.city!,
       mobile: this.checkoutForm.value.mobile!,
       items,
-      total
+      total: this.total
     }).subscribe({
       next: () => {
         this.orderPlaced = true;

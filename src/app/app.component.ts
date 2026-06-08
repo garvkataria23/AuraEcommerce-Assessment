@@ -1,4 +1,5 @@
-import { Component } from '@angular/core';
+import { Component, HostListener } from '@angular/core';
+import { CommonModule } from '@angular/common';
 import { RouterLink, RouterLinkActive, RouterOutlet, ChildrenOutletContexts } from '@angular/router';
 import { trigger, transition, style, animate, query, group } from '@angular/animations';
 import { CartService } from './services/cart.service';
@@ -25,17 +26,42 @@ const routeAnimation = trigger('routeAnimation', [
 @Component({
   selector: 'app-root',
   standalone: true,
-  imports: [RouterOutlet, RouterLink, RouterLinkActive, ToastComponent],
+  imports: [CommonModule, RouterOutlet, RouterLink, RouterLinkActive, ToastComponent],
   templateUrl: './app.component.html',
   animations: [routeAnimation]
 })
 export class AppComponent {
+  isDark = false;
+  showBackToTop = false;
+
   constructor(
     public cartService: CartService,
     private contexts: ChildrenOutletContexts
-  ) {}
+  ) {
+    this.isDark = localStorage.getItem('theme') === 'dark';
+    this.applyTheme();
+  }
 
   getRouteAnimation() {
     return this.contexts.getContext('primary')?.route?.snapshot?.url?.[0]?.path || '';
+  }
+
+  toggleTheme() {
+    this.isDark = !this.isDark;
+    localStorage.setItem('theme', this.isDark ? 'dark' : 'light');
+    this.applyTheme();
+  }
+
+  private applyTheme() {
+    document.documentElement.setAttribute('data-theme', this.isDark ? 'dark' : 'light');
+  }
+
+  @HostListener('window:scroll')
+  onScroll() {
+    this.showBackToTop = window.scrollY > 400;
+  }
+
+  scrollToTop() {
+    window.scrollTo({ top: 0, behavior: 'smooth' });
   }
 }

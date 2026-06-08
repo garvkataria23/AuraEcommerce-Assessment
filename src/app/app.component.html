@@ -1,26 +1,43 @@
-<nav class="navbar navbar-expand-lg navbar-dark bg-dark sticky-top">
+<nav class="navbar navbar-expand-lg navbar-modern sticky-top">
   <div class="container">
-    <a class="navbar-brand fw-bold" routerLink="/products">AuraEcommerce</a>
+    <a class="navbar-brand" routerLink="/products">
+      <i class="bi bi-shop"></i> AuraStore
+    </a>
 
-    <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#mainNavbar">
-      <span class="navbar-toggler-icon"></span>
-    </button>
+    <div class="d-flex align-items-center gap-2 order-lg-last">
+      <button class="theme-toggle" (click)="toggleTheme()" title="Toggle theme">
+        <i class="bi" [ngClass]="isDark ? 'bi-sun-fill' : 'bi-moon-fill'"></i>
+      </button>
+
+      <button class="navbar-toggler border-0" type="button" data-bs-toggle="collapse" data-bs-target="#mainNavbar">
+        <i class="bi bi-list fs-4" style="color: var(--text-primary);"></i>
+      </button>
+    </div>
 
     <div class="collapse navbar-collapse" id="mainNavbar">
-      <ul class="navbar-nav ms-auto">
+      <ul class="navbar-nav mx-auto">
         <li class="nav-item">
-          <a class="nav-link" routerLink="/login" routerLinkActive="active">Login</a>
-        </li>
-        <li class="nav-item">
-          <a class="nav-link" routerLink="/products" routerLinkActive="active">Products</a>
-        </li>
-        <li class="nav-item">
-          <a class="nav-link" routerLink="/cart" routerLinkActive="active">
-            Cart ({{ cartService.getCartCount() }})
+          <a class="nav-link nav-link-modern" routerLink="/products" routerLinkActive="active">
+            <i class="bi bi-grid-fill"></i> Products
           </a>
         </li>
         <li class="nav-item">
-          <a class="nav-link" routerLink="/checkout" routerLinkActive="active">Checkout</a>
+          <a class="nav-link nav-link-modern" routerLink="/cart" routerLinkActive="active">
+            <i class="bi bi-cart-fill"></i> Cart
+            <span class="cart-badge ms-1" *ngIf="cartService.getCartCount() > 0">
+              {{ cartService.getCartCount() }}
+            </span>
+          </a>
+        </li>
+        <li class="nav-item">
+          <a class="nav-link nav-link-modern" routerLink="/checkout" routerLinkActive="active">
+            <i class="bi bi-credit-card-fill"></i> Checkout
+          </a>
+        </li>
+        <li class="nav-item">
+          <a class="nav-link nav-link-modern" routerLink="/login" routerLinkActive="active">
+            <i class="bi bi-person-fill"></i> Account
+          </a>
         </li>
       </ul>
     </div>
@@ -35,6 +52,19 @@
 
 <app-toast></app-toast>
 
-<footer class="bg-dark text-white text-center py-3 mt-5">
-  <small>&copy; 2026 AuraEcommerce Demo Assessment</small>
+<button class="back-to-top" [class.visible]="showBackToTop" (click)="scrollToTop()" title="Back to top">
+  <i class="bi bi-arrow-up"></i>
+</button>
+
+<footer class="footer-modern">
+  <div class="container text-center">
+    <div class="footer-brand mb-2">AuraStore</div>
+    <div class="footer-links mb-2">
+      <a routerLink="/products">Products</a>
+      <a routerLink="/cart">Cart</a>
+      <a routerLink="/checkout">Checkout</a>
+      <a routerLink="/login">Account</a>
+    </div>
+    <small>&copy; 2026 AuraStore. All rights reserved.</small>
+  </div>
 </footer>
