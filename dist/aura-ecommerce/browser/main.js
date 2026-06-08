@@ -39283,7 +39283,7 @@ var ToastComponent = class _ToastComponent {
 // src/environments/environment.ts
 var environment = {
   production: false,
-  apiUrl: "http://localhost:3000/api"
+  apiUrl: "https://auraecommercee.netlify.app/api"
 };
 
 // src/app/services/cart.service.ts
@@ -45844,7 +45844,7 @@ var LoginComponent = class _LoginComponent {
     if (this.loginForm.invalid) {
       return;
     }
-    alert("Demo login successful. No backend connected.");
+    alert("Login page validation successful.");
   }
   static {
     this.\u0275fac = function LoginComponent_Factory(t) {
@@ -45879,7 +45879,7 @@ var LoginComponent = class _LoginComponent {
         \u0275\u0275text(21, "Login");
         \u0275\u0275elementEnd()();
         \u0275\u0275elementStart(22, "p", 13);
-        \u0275\u0275text(23, " Demo only. Authentication API is not connected. ");
+        \u0275\u0275text(23, " Login page included as part of assessment requirements. ");
         \u0275\u0275elementEnd()()()()();
       }
       if (rf & 2) {

@@ -28,6 +28,6 @@ export class LoginComponent {
     if (this.loginForm.invalid) {
       return;
     }
-    alert('Demo login successful. No backend connected.');
+    alert('Login page validation successful.');
   }
 }
