@@ -1,0 +1,73 @@
+<div class="row g-4">
+  <div class="col-lg-7">
+    <div class="card shadow-sm">
+      <div class="card-header bg-success text-white">
+        <h4 class="mb-0">Checkout</h4>
+      </div>
+
+      <div class="card-body">
+        <div class="alert alert-success text-center" *ngIf="orderPlaced" @checkmarkAnim>
+          <svg class="checkmark-circle mb-2" width="64" height="64" viewBox="0 0 52 52">
+            <circle cx="26" cy="26" r="24" fill="none" stroke="#198754" stroke-width="3"/>
+            <path class="checkmark-check" d="M14 27l7 7 16-16" fill="none" stroke="#198754" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/>
+          </svg>
+          <h5 class="mb-0">Order placed successfully!</h5>
+        </div>
+
+        <form [formGroup]="checkoutForm" (ngSubmit)="placeOrder()">
+          <div class="mb-3" [@shakeTrigger]="shakeState">
+            <label class="form-label">Customer Name</label>
+            <input class="form-control" formControlName="customerName"
+              [class.is-invalid]="submitted && f.customerName.errors">
+            <div class="invalid-feedback">
+              <span *ngIf="f.customerName.errors?.required">Customer name is required.</span>
+              <span *ngIf="f.customerName.errors?.minlength">Customer name must be at least 3 characters.</span>
+            </div>
+          </div>
+
+          <div class="mb-3" [@shakeTrigger]="shakeState">
+            <label class="form-label">Address</label>
+            <textarea class="form-control" rows="3" formControlName="address"
+              [class.is-invalid]="submitted && f.address.errors"></textarea>
+            <div class="invalid-feedback">Address is required.</div>
+          </div>
+
+          <div class="mb-3" [@shakeTrigger]="shakeState">
+            <label class="form-label">Mobile Number</label>
+            <input class="form-control" formControlName="mobile"
+              [class.is-invalid]="submitted && f.mobile.errors">
+            <div class="invalid-feedback">Mobile number must be exactly 10 digits.</div>
+          </div>
+
+          <button class="btn btn-success btn-hover-scale" [disabled]="cartService.getItems().length === 0">
+            Place Order
+          </button>
+          <a class="btn btn-link" routerLink="/cart">Back to Cart</a>
+        </form>
+      </div>
+    </div>
+  </div>
+
+  <div class="col-lg-5">
+    <div class="card shadow-sm">
+      <div class="card-header">
+        <h5 class="mb-0">Order Summary</h5>
+      </div>
+
+      <div class="card-body">
+        <div *ngIf="cartService.getItems().length === 0" class="text-muted">
+          No items in cart.
+        </div>
+
+        <ul class="list-group mb-3" *ngIf="cartService.getItems().length > 0">
+          <li class="list-group-item d-flex justify-content-between" *ngFor="let item of cartService.getItems()">
+            <span>{{ item.product.name }} x {{ item.quantity }}</span>
+            <strong>{{ item.product.price * item.quantity | currency:'INR' }}</strong>
+          </li>
+        </ul>
+
+        <h5>Total: {{ cartService.getTotal() | currency:'INR' }}</h5>
+      </div>
+    </div>
+  </div>
+</div>

@@ -1,0 +1,33 @@
+<div class="row justify-content-center">
+  <div class="col-md-5">
+    <div class="card shadow-sm">
+      <div class="card-header bg-primary text-white">
+        <h4 class="mb-0">Login</h4>
+      </div>
+
+      <div class="card-body">
+        <form [formGroup]="loginForm" (ngSubmit)="login()">
+          <div class="mb-3">
+            <label class="form-label">Email</label>
+            <input class="form-control" formControlName="email" placeholder="Enter email"
+              [class.is-invalid]="submitted && f.email.errors">
+            <div class="invalid-feedback">Valid email is required.</div>
+          </div>
+
+          <div class="mb-3">
+            <label class="form-label">Password</label>
+            <input type="password" class="form-control" formControlName="password" placeholder="Enter password"
+              [class.is-invalid]="submitted && f.password.errors">
+            <div class="invalid-feedback">Password is required.</div>
+          </div>
+
+          <button class="btn btn-primary w-100">Login</button>
+        </form>
+
+        <p class="text-muted small mt-3 mb-0">
+          Demo only. Authentication API is not connected.
+        </p>
+      </div>
+    </div>
+  </div>
+</div>
