@@ -1,10 +1,13 @@
 <div class="mb-4">
   <h3 class="fw-bold"><i class="bi bi-shield-lock-fill" style="color: var(--primary);"></i> Admin Dashboard</h3>
-  <p style="color: var(--text-secondary);">Manage products, orders, and coupons</p>
+  <p style="color: var(--text-secondary);">Analytics, products, orders, and coupons</p>
 </div>
 
 <!-- Tabs -->
-<div class="d-flex gap-2 mb-4">
+<div class="d-flex gap-2 mb-4 flex-wrap">
+  <button class="btn-custom" [class.btn-primary-custom]="activeTab === 'analytics'" [class.btn-outline-custom]="activeTab !== 'analytics'" (click)="setTab('analytics')">
+    <i class="bi bi-graph-up"></i> Analytics
+  </button>
   <button class="btn-custom" [class.btn-primary-custom]="activeTab === 'products'" [class.btn-outline-custom]="activeTab !== 'products'" (click)="setTab('products')">
     <i class="bi bi-box"></i> Products ({{ products.length }})
   </button>
@@ -16,7 +19,151 @@
   </button>
 </div>
 
-<!-- Products Tab -->
+<!-- ==================== ANALYTICS TAB ==================== -->
+<div *ngIf="activeTab === 'analytics' && analytics">
+  <!-- KPI Cards -->
+  <div class="row g-3 mb-4">
+    <div class="col-md-3 col-6">
+      <div class="details-card p-3 text-center">
+        <div style="font-size: 1.8rem; font-weight: 800;">{{ analytics.totals.totalOrders }}</div>
+        <div style="color: var(--text-light); font-size: 0.85rem;">Total Orders</div>
+      </div>
+    </div>
+    <div class="col-md-3 col-6">
+      <div class="details-card p-3 text-center">
+        <div style="font-size: 1.8rem; font-weight: 800;">₹{{ analytics.totals.totalRevenue | number:'1.0-0' }}</div>
+        <div style="color: var(--text-light); font-size: 0.85rem;">Total Revenue</div>
+      </div>
+    </div>
+    <div class="col-md-3 col-6">
+      <div class="details-card p-3 text-center">
+        <div style="font-size: 1.8rem; font-weight: 800;">₹{{ analytics.totals.avgOrder | number:'1.0-0' }}</div>
+        <div style="color: var(--text-light); font-size: 0.85rem;">Avg Order Value</div>
+      </div>
+    </div>
+    <div class="col-md-3 col-6">
+      <div class="details-card p-3 text-center">
+        <div style="font-size: 1.8rem; font-weight: 800;">{{ totalItemsSold }}</div>
+        <div style="color: var(--text-light); font-size: 0.85rem;">Products Sold</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Growth Cards -->
+  <div class="row g-3 mb-4">
+    <div class="col-md-3 col-6">
+      <div class="details-card p-3">
+        <div class="d-flex justify-content-between align-items-center">
+          <span style="color: var(--text-light); font-size: 0.8rem;">Revenue Growth</span>
+          <i class="bi {{ growthIcon(analytics.growth.revenueGrowth) }}" style="color: {{ growthColor(analytics.growth.revenueGrowth) }}; font-size: 1.2rem;"></i>
+        </div>
+        <div style="font-size: 1.5rem; font-weight: 700; color: {{ growthColor(analytics.growth.revenueGrowth) }};">
+          {{ analytics.growth.revenueGrowth > 0 ? '+' : '' }}{{ analytics.growth.revenueGrowth }}%
+        </div>
+        <small style="color: var(--text-light);">Last 3mo vs previous 3mo</small>
+      </div>
+    </div>
+    <div class="col-md-3 col-6">
+      <div class="details-card p-3">
+        <div class="d-flex justify-content-between align-items-center">
+          <span style="color: var(--text-light); font-size: 0.8rem;">Orders Growth</span>
+          <i class="bi {{ growthIcon(analytics.growth.ordersGrowth) }}" style="color: {{ growthColor(analytics.growth.ordersGrowth) }}; font-size: 1.2rem;"></i>
+        </div>
+        <div style="font-size: 1.5rem; font-weight: 700; color: {{ growthColor(analytics.growth.ordersGrowth) }};">
+          {{ analytics.growth.ordersGrowth > 0 ? '+' : '' }}{{ analytics.growth.ordersGrowth }}%
+        </div>
+        <small style="color: var(--text-light);">Last 3mo vs previous 3mo</small>
+      </div>
+    </div>
+    <div class="col-md-3 col-6">
+      <div class="details-card p-3">
+        <div class="d-flex justify-content-between align-items-center">
+          <span style="color: var(--text-light); font-size: 0.8rem;">Prev. Period Revenue</span>
+        </div>
+        <div style="font-size: 1.5rem; font-weight: 700;">₹{{ analytics.growth.previousRevenue | number:'1.0-0' }}</div>
+        <small style="color: var(--text-light);">3-6 months ago</small>
+      </div>
+    </div>
+    <div class="col-md-3 col-6">
+      <div class="details-card p-3">
+        <div class="d-flex justify-content-between align-items-center">
+          <span style="color: var(--text-light); font-size: 0.8rem;">Recent Revenue</span>
+        </div>
+        <div style="font-size: 1.5rem; font-weight: 700;">₹{{ analytics.growth.recentRevenue | number:'1.0-0' }}</div>
+        <small style="color: var(--text-light);">Last 3 months</small>
+      </div>
+    </div>
+  </div>
+
+  <!-- Revenue Chart (Bar) -->
+  <div class="details-card p-4 mb-3">
+    <h6 class="fw-bold mb-3"><i class="bi bi-currency-rupee"></i> Monthly Revenue (30 months)</h6>
+    <div class="chart-container" style="height: 200px; display: flex; align-items: flex-end; gap: 3px;">
+      <div *ngFor="let s of analytics.series" style="flex: 1; display: flex; flex-direction: column; align-items: center; position: relative;">
+        <div
+          class="chart-bar"
+          [style.height.%]="(s.revenue / maxRevenue) * 100"
+          [style.background]="'linear-gradient(to top, #6C63FF, #8B83FF)'"
+          [title]="s.label + ': ₹' + (s.revenue | number:'1.0-0')"
+          style="width: 100%; border-radius: 4px 4px 0 0; transition: height 0.3s; min-height: 2px; cursor: pointer;">
+        </div>
+        <span style="font-size: 0.55rem; color: var(--text-light); transform: rotate(-45deg); margin-top: 4px; white-space: nowrap;" *ngIf="analytics.series.indexOf(s) % 3 === 0 || analytics.series.length < 15">
+          {{ s.label }}
+        </span>
+      </div>
+    </div>
+  </div>
+
+  <!-- Orders Chart -->
+  <div class="details-card p-4 mb-3">
+    <h6 class="fw-bold mb-3"><i class="bi bi-cart-check"></i> Monthly Orders</h6>
+    <div class="chart-container" style="height: 150px; display: flex; align-items: flex-end; gap: 3px;">
+      <div *ngFor="let s of analytics.series" style="flex: 1; display: flex; flex-direction: column; align-items: center;">
+        <div
+          class="chart-bar"
+          [style.height.%]="(s.orders / maxOrders) * 100"
+          [style.background]="'linear-gradient(to top, #10B981, #34D399)'"
+          [title]="s.label + ': ' + s.orders + ' orders'"
+          style="width: 100%; border-radius: 4px 4px 0 0; transition: height 0.3s; min-height: 2px; cursor: pointer;">
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Top Products -->
+  <div class="details-card p-4 mb-3">
+    <h6 class="fw-bold mb-3"><i class="bi bi-trophy"></i> Top Selling Products</h6>
+    <div class="row g-2">
+      <div class="col-md-6" *ngFor="let p of analytics.topProducts; let i = index">
+        <div class="d-flex align-items-center gap-2 p-2" style="border-radius: var(--radius-sm); background: var(--bg-main);">
+          <span style="font-weight: 800; color: var(--primary); min-width: 24px;">#{{ i + 1 }}</span>
+          <div style="flex: 1;">
+            <div style="font-weight: 600; font-size: 0.9rem;">{{ p._id }}</div>
+            <div style="font-size: 0.8rem; color: var(--text-light);">Sold: {{ p.count }} | ₹{{ p.revenue | number:'1.0-0' }}</div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Order Status Breakdown -->
+  <div class="details-card p-4">
+    <h6 class="fw-bold mb-3"><i class="bi bi-pie-chart"></i> Orders by Status</h6>
+    <div class="d-flex gap-3 flex-wrap">
+      <div *ngFor="let s of analytics.byStatus" class="d-flex align-items-center gap-2">
+        <span class="badge text-bg-{{ orderStatusBadge(s._id) }}" style="font-size: 0.9rem; padding: 0.4rem 0.8rem;">{{ s._id }}</span>
+        <span style="font-weight: 700;">{{ s.count }}</span>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div *ngIf="activeTab === 'analytics' && !analytics" class="text-center py-5 text-muted">
+  <i class="bi bi-graph-up" style="font-size: 2rem;"></i>
+  <p class="mt-2">Loading analytics...</p>
+</div>
+
+<!-- ==================== PRODUCTS TAB ==================== -->
 <div *ngIf="activeTab === 'products'">
   <div class="d-flex justify-content-between align-items-center mb-3">
     <h5 class="fw-bold mb-0">All Products</h5>
@@ -32,7 +179,7 @@
         <input class="form-control-custom" [(ngModel)]="productForm.name">
       </div>
       <div class="col-md-2">
-        <label class="form-label-custom">Price</label>
+        <label class="form-label-custom">Price (₹)</label>
         <input class="form-control-custom" type="number" [(ngModel)]="productForm.price">
       </div>
       <div class="col-md-2">
@@ -44,16 +191,23 @@
         <input class="form-control-custom" [(ngModel)]="productForm.category">
       </div>
       <div class="col-md-6">
-        <label class="form-label-custom">Image URL</label>
-        <input class="form-control-custom" [(ngModel)]="productForm.image">
+        <label class="form-label-custom">Product Image</label>
+        <div class="d-flex align-items-center gap-3">
+          <input type="file" accept="image/*" class="form-control-custom" (change)="onFileSelected($event)" style="padding: 0.45rem 0.75rem;">
+          <button *ngIf="imagePreview" class="btn-custom btn-outline-custom" style="padding: 0.3rem 0.6rem; font-size: 0.8rem;" (click)="clearFileInput()">Clear</button>
+        </div>
+        <div *ngIf="imagePreview" class="mt-2">
+          <img [src]="imagePreview" style="max-width: 120px; max-height: 80px; border-radius: 6px; object-fit: contain; border: 1px solid var(--border);">
+        </div>
       </div>
       <div class="col-12">
         <label class="form-label-custom">Description</label>
         <textarea class="form-control-custom" [(ngModel)]="productForm.description" rows="2"></textarea>
       </div>
       <div class="col-12 d-flex gap-2">
-        <button class="btn-custom btn-success-custom" (click)="saveProduct()">
-          <i class="bi bi-check-lg"></i> {{ editProduct ? 'Update' : 'Create' }}
+        <button class="btn-custom btn-success-custom" (click)="saveProduct()" [disabled]="uploading">
+          <i class="bi" [ngClass]="uploading ? 'bi-arrow-repeat spin' : 'bi-check-lg'"></i>
+          {{ uploading ? 'Uploading...' : (editProduct ? 'Update' : 'Create') }}
         </button>
         <button class="btn-custom btn-outline-custom" (click)="showProductForm = false">Cancel</button>
       </div>
@@ -98,7 +252,7 @@
   </div>
 </div>
 
-<!-- Orders Tab -->
+<!-- ==================== ORDERS TAB ==================== -->
 <div *ngIf="activeTab === 'orders'">
   <div class="table-responsive">
     <table class="cart-table">
@@ -137,7 +291,7 @@
   </div>
 </div>
 
-<!-- Coupons Tab -->
+<!-- ==================== COUPONS TAB ==================== -->
 <div *ngIf="activeTab === 'coupons'">
   <div class="details-card p-4">
     <h6 class="fw-bold mb-3">Active Coupons</h6>

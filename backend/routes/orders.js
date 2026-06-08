@@ -87,4 +87,126 @@ router.put('/:id/status', authMiddleware, adminMiddleware, async (req, res) => {
   }
 });
 
+router.get('/analytics/overview', authMiddleware, adminMiddleware, async (req, res) => {
+  try {
+    const now = new Date();
+    const thirtyMonthsAgo = new Date(now.getFullYear(), now.getMonth() - 29, 1);
+
+    const monthly = await Order.aggregate([
+      { $match: { createdAt: { $gte: thirtyMonthsAgo } } },
+      {
+        $group: {
+          _id: { year: { $year: '$createdAt' }, month: { $month: '$createdAt' } },
+          orders: { $sum: 1 },
+          revenue: { $sum: '$total' },
+          avgOrderValue: { $avg: '$total' }
+        }
+      },
+      { $sort: { '_id.year': 1, '_id.month': 1 } }
+    ]);
+
+    // Build full 30-month series with zero padding
+    const series = [];
+    for (let i = 29; i >= 0; i--) {
+      const d = new Date(now.getFullYear(), now.getMonth() - i, 1);
+      const key = d.toLocaleString('en-US', { month: 'short', year: 'numeric' });
+      const sortKey = d.getFullYear() * 100 + (d.getMonth() + 1);
+      const match = monthly.find(m => m._id.year === d.getFullYear() && m._id.month === d.getMonth() + 1);
+      series.push({
+        label: key,
+        sortKey,
+        orders: match ? match.orders : 0,
+        revenue: match ? Math.round(match.revenue) : 0,
+        avgOrderValue: match ? Math.round(match.avgOrderValue) : 0
+      });
+    }
+
+    // Totals
+    const totals = await Order.aggregate([
+      { $match: { createdAt: { $gte: thirtyMonthsAgo } } },
+      {
+        $group: {
+          _id: null,
+          totalOrders: { $sum: 1 },
+          totalRevenue: { $sum: '$total' },
+          avgOrder: { $avg: '$total' }
+        }
+      }
+    ]);
+
+    // Category breakdown
+    const categories = await Order.aggregate([
+      { $match: { createdAt: { $gte: thirtyMonthsAgo } } },
+      { $unwind: '$items' },
+      {
+        $group: {
+          _id: '$items.name',
+          count: { $sum: '$items.quantity' },
+          revenue: { $sum: { $multiply: ['$items.price', '$items.quantity'] } }
+        }
+      },
+      { $sort: { count: -1 } },
+      { $limit: 10 }
+    ]);
+
+    // Growth - compare last 3 months vs previous 3 months
+    const last3 = new Date(now.getFullYear(), now.getMonth() - 2, 1);
+    const prev3 = new Date(now.getFullYear(), now.getMonth() - 5, 1);
+    const prev6 = new Date(now.getFullYear(), now.getMonth() - 8, 1);
+
+    const [recent, previous, older] = await Promise.all([
+      Order.aggregate([
+        { $match: { createdAt: { $gte: last3 } } },
+        { $group: { _id: null, revenue: { $sum: '$total' }, orders: { $sum: 1 } } }
+      ]),
+      Order.aggregate([
+        { $match: { createdAt: { $gte: prev3, $lt: last3 } } },
+        { $group: { _id: null, revenue: { $sum: '$total' }, orders: { $sum: 1 } } }
+      ]),
+      Order.aggregate([
+        { $match: { createdAt: { $gte: prev6, $lt: prev3 } } },
+        { $group: { _id: null, revenue: { $sum: '$total' }, orders: { $sum: 1 } } }
+      ])
+    ]);
+
+    const r = recent[0] || { revenue: 0, orders: 0 };
+    const p = previous[0] || { revenue: 0, orders: 0 };
+    const o = older[0] || { revenue: 0, orders: 0 };
+
+    const revenueGrowth = p.revenue > 0 ? Math.round(((r.revenue - p.revenue) / p.revenue) * 100) : 0;
+    const ordersGrowth = p.orders > 0 ? Math.round(((r.orders - p.orders) / p.orders) * 100) : 0;
+    const revenueGrowthPrev = o.revenue > 0 ? Math.round(((p.revenue - o.revenue) / o.revenue) * 100) : 0;
+    const ordersGrowthPrev = o.orders > 0 ? Math.round(((p.orders - o.orders) / p.orders) * 100) : 0;
+
+    // Status breakdown
+    const byStatus = await Order.aggregate([
+      { $match: { createdAt: { $gte: thirtyMonthsAgo } } },
+      { $group: { _id: '$status', count: { $sum: 1 } } }
+    ]);
+
+    res.json({
+      series,
+      totals: {
+        totalOrders: totals[0]?.totalOrders || 0,
+        totalRevenue: totals[0]?.totalRevenue || 0,
+        avgOrder: Math.round(totals[0]?.avgOrder || 0)
+      },
+      growth: {
+        revenueGrowth,
+        ordersGrowth,
+        revenueGrowthPrev,
+        ordersGrowthPrev,
+        recentRevenue: Math.round(r.revenue),
+        previousRevenue: Math.round(p.revenue),
+        recentOrders: r.orders,
+        previousOrders: p.orders
+      },
+      topProducts: categories,
+      byStatus
+    });
+  } catch (err) {
+    res.status(500).json({ message: err.message });
+  }
+});
+
 module.exports = router;
