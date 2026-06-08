@@ -1,4 +1,4 @@
 export const environment = {
-  production: false,
-  apiUrl: 'https://auraecommercee.netlify.app/api'
+  production: true,
+  apiUrl: 'https://auraecommerce-assessment.onrender.com/api'
 };
