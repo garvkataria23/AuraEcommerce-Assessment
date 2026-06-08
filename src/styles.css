@@ -1822,7 +1822,7 @@ textarea.chk-input { resize: vertical; min-height: 80px; }
 .back-to-top {
   position: fixed;
   bottom: 2rem;
-  right: 2rem;
+  left: 2rem;
   width: 44px;
   height: 44px;
   border-radius: var(--radius-full);
@@ -1860,7 +1860,7 @@ textarea.chk-input { resize: vertical; min-height: 80px; }
   box-shadow: 0 8px 28px rgba(79,70,229,0.5);
 }
 @media (max-width: 768px) {
-  .back-to-top { bottom: 80px; right: 1rem; width: 38px; height: 38px; font-size: 1rem; }
+  .back-to-top { bottom: 80px; left: 1rem; right: auto; width: 38px; height: 38px; font-size: 1rem; }
 }
 
 /* ─── Premium Footer ─── */
