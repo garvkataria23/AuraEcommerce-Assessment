@@ -32,7 +32,26 @@
       type="text"
       placeholder="Search products..."
       [(ngModel)]="searchTerm"
-      (ngModelChange)="onSearchChange()">
+      (ngModelChange)="onSearchChange()"
+      (focus)="focusSearch()"
+      (blur)="blurSearch()"
+      (keydown)="onLiveSearchKeydown($event)">
+    <!-- Live Search Dropdown -->
+    <div class="live-search" [class.has-results]="showLiveSearch && liveSearchResults.length > 0">
+      <a class="live-search-item" *ngFor="let p of liveSearchResults; let i = index"
+        [class.highlighted]="i === liveSearchIndex"
+        [routerLink]="['/product', p.id]">
+        <img [src]="p.image" [alt]="p.name">
+        <div style="flex: 1;">
+          <div class="ls-name" [innerHTML]="highlightMatch(p.name)"></div>
+          <div class="ls-category">{{ p.category }}</div>
+        </div>
+        <div class="ls-price">{{ p.price | currency:'INR' }}</div>
+      </a>
+      <div class="p-2 text-center text-muted" style="font-size: 0.8rem;" *ngIf="showLiveSearch && liveSearchResults.length === 0">
+        No matching products
+      </div>
+    </div>
   </div>
 
   <select class="filter-select" [(ngModel)]="sortBy" (ngModelChange)="onSortChange()">
@@ -45,9 +64,7 @@
 
 <!-- Category Pills -->
 <div class="category-pills" *ngIf="!loading">
-  <button
-    class="category-pill"
-    *ngFor="let cat of categories"
+  <button class="category-pill ripple" *ngFor="let cat of categories"
     [class.active]="selectedCategory === cat"
     (click)="onCategoryChange(cat)">
     {{ cat }}
@@ -56,18 +73,23 @@
 
 <!-- Products Grid -->
 <div class="product-grid" [@cardStagger]="filteredProducts.length" *ngIf="!loading && filteredProducts.length > 0">
-  <div class="product-card" *ngFor="let product of filteredProducts">
+  <div class="product-card" *ngFor="let product of filteredProducts; trackBy: trackById">
     <div class="product-image-wrap">
-      <img [src]="product.image" class="product-image" [alt]="product.name" loading="lazy">
+      <!-- Badges -->
+      <div class="product-badge featured" *ngIf="product.featured">Featured</div>
+      <div class="product-badge stock-low" *ngIf="!product.featured && product.stock != null && product.stock > 0 && product.stock <= 5">Only {{ product.stock }} left</div>
+      <div class="product-badge stock-out" *ngIf="product.stock != null && product.stock === 0">Out of Stock</div>
+
+      <a [routerLink]="['/product', product.id]">
+        <img [src]="product.image" class="product-image" [alt]="product.name" loading="lazy">
+      </a>
       <div class="product-actions-overlay">
-        <button
-          class="action-btn"
-          [class.wishlist-active]="isInWishlist(product.id)"
+        <button class="action-btn" [class.wishlist-active]="isInWishlist(product.id)"
           (click)="toggleWishlist(product)"
           [title]="isInWishlist(product.id) ? 'Remove from wishlist' : 'Add to wishlist'">
           <i class="bi" [ngClass]="isInWishlist(product.id) ? 'bi-heart-fill' : 'bi-heart'"></i>
         </button>
-        <a class="action-btn" [routerLink]="['/product', product.id]" title="View details">
+        <a class="action-btn" [routerLink]="['/product', product.id]" title="Quick view">
           <i class="bi bi-eye"></i>
         </a>
       </div>
@@ -75,13 +97,19 @@
     <div class="product-body">
       <span class="product-category">{{ product.category }}</span>
       <h5 class="product-name">{{ product.name }}</h5>
+      <!-- Rating Stars -->
+      <div class="product-rating" *ngIf="product.rating">
+        <i class="bi" [ngClass]="s ? 'bi-star-fill' : 'bi-star'" *ngFor="let s of stars(product.rating)"></i>
+        <span class="rating-count" *ngIf="product.numReviews">({{ product.numReviews }})</span>
+      </div>
       <p class="product-description">{{ product.description }}</p>
       <div class="product-price">{{ product.price | currency:'INR' }}</div>
       <div class="product-card-footer">
-        <button class="btn-custom btn-primary-custom" (click)="addToCart(product)">
-          <i class="bi bi-cart-plus"></i> Add to Cart
+        <button class="btn-custom btn-primary-custom atc-btn ripple" [class.adding]="addingToCart === product.id" [class.added]="addingToCart === product.id" (click)="addToCart(product)">
+          <span class="atc-default"><i class="bi bi-cart-plus"></i> Add to Cart</span>
+          <span class="atc-success"><i class="bi bi-check-lg"></i> Added!</span>
         </button>
-        <a class="btn-custom btn-outline-custom" [routerLink]="['/product', product.id]">
+        <a class="btn-custom btn-outline-custom ripple" [routerLink]="['/product', product.id]">
           <i class="bi bi-chevron-right"></i>
         </a>
       </div>
@@ -109,7 +137,7 @@
   </div>
   <h4>No products found</h4>
   <p>Try adjusting your search or filter to find what you're looking for.</p>
-  <button class="btn-custom btn-primary-custom" (click)="searchTerm = ''; selectedCategory = 'All'; filterProducts()">
+  <button class="btn-custom btn-primary-custom ripple" (click)="searchTerm = ''; selectedCategory = 'All'; filterProducts()">
     <i class="bi bi-arrow-counterclockwise"></i> Clear Filters
   </button>
 </div>

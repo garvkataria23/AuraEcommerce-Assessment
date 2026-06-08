@@ -11,16 +11,16 @@ import { ChatComponent } from './components/chat/chat.component';
 const routeAnimation = trigger('routeAnimation', [
   transition('* => *', [
     query(':enter, :leave', [
-      style({ position: 'absolute', width: '100%', top: 0, left: 0 })
+      style({ position: 'fixed', width: 'calc(100% - 2rem)', maxWidth: '1320px', top: '80px', zIndex: 1 })
     ], { optional: true }),
     group([
       query(':leave', [
         style({ opacity: 1, transform: 'translateY(0)' }),
-        animate('0.2s ease-in', style({ opacity: 0, transform: 'translateY(-8px)' }))
+        animate('0.2s ease-in', style({ opacity: 0, transform: 'translateY(-12px)' }))
       ], { optional: true }),
       query(':enter', [
-        style({ opacity: 0, transform: 'translateY(12px)' }),
-        animate('0.3s 0.15s ease-out', style({ opacity: 1, transform: 'translateY(0)' }))
+        style({ opacity: 0, transform: 'translateY(16px)' }),
+        animate('0.35s 0.12s ease-out', style({ opacity: 1, transform: 'translateY(0)' }))
       ], { optional: true })
     ])
   ])
@@ -59,6 +59,7 @@ export class AppComponent {
 
   private applyTheme() {
     document.documentElement.setAttribute('data-theme', this.isDark ? 'dark' : 'light');
+    document.documentElement.style.transition = 'background 0.4s ease, color 0.4s ease';
   }
 
   @HostListener('window:scroll')

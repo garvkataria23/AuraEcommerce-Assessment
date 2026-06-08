@@ -4,7 +4,7 @@ import { Subject } from 'rxjs';
 export interface ToastMessage {
   id: number;
   text: string;
-  type: 'success' | 'error' | 'info';
+  type: 'success' | 'error' | 'info' | 'warning';
 }
 
 @Injectable({ providedIn: 'root' })
@@ -14,7 +14,7 @@ export class ToastService {
 
   toasts$ = this.toasts.asObservable();
 
-  show(text: string, type: 'success' | 'error' | 'info' = 'success') {
+  show(text: string, type: 'success' | 'error' | 'info' | 'warning' = 'success') {
     this.toasts.next({ id: ++this.counter, text, type });
   }
 }

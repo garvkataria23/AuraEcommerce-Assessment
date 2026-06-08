@@ -29,7 +29,7 @@
             <input class="form-control-custom" formControlName="confirmPassword" type="password" placeholder="Repeat password" [class.is-invalid]="submitted && f.confirmPassword.errors">
             <div class="invalid-feedback" *ngIf="submitted && f.confirmPassword.errors?.mismatch">Passwords do not match</div>
           </div>
-          <button class="btn-custom btn-primary-custom w-100 text-center" style="padding: 0.9rem;" [disabled]="loading">
+          <button class="btn-custom btn-primary-custom w-100 text-center ripple" style="padding: 0.9rem;" [disabled]="loading">
             <i class="bi" [ngClass]="loading ? 'bi-arrow-repeat spin' : 'bi-person-plus-fill'"></i>
             {{ loading ? 'Creating account...' : 'Create Account' }}
           </button>

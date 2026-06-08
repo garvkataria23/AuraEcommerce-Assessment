@@ -44,6 +44,7 @@ export class CheckoutComponent {
   couponApplied: any = null;
   couponError = '';
   checkingCoupon = false;
+  checkoutStep = 1;
 
   checkoutForm = this.fb.group({
     customerName: ['', [Validators.required, Validators.minLength(3)]],

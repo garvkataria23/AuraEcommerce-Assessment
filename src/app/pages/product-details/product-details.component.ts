@@ -8,7 +8,9 @@ import { CartService } from '../../services/cart.service';
 import { ToastService } from '../../services/toast.service';
 import { AuthService } from '../../services/auth.service';
 import { ReviewService } from '../../services/review.service';
+import { RecentlyViewedService } from '../../services/recently-viewed.service';
 import { Product } from '../../models/product.model';
+import { OrderTimelineComponent } from '../../components/order-timeline/order-timeline.component';
 
 const fadeIn = trigger('fadeIn', [
   transition(':enter', [
@@ -20,13 +22,14 @@ const fadeIn = trigger('fadeIn', [
 @Component({
   selector: 'app-product-details',
   standalone: true,
-  imports: [CommonModule, RouterLink, CurrencyPipe, FormsModule, DatePipe],
+  imports: [CommonModule, RouterLink, CurrencyPipe, FormsModule, DatePipe, OrderTimelineComponent],
   templateUrl: './product-details.component.html',
   animations: [fadeIn]
 })
 export class ProductDetailsComponent {
   product?: any;
   relatedProducts: Product[] = [];
+  recentlyViewed: any[] = [];
   quantity = 1;
   allProducts: Product[] = [];
   reviews: any[] = [];
@@ -34,6 +37,12 @@ export class ProductDetailsComponent {
   reviewRating = 5;
   reviewComment = '';
   submittingReview = false;
+  loading = true;
+  addingToCart = false;
+
+  // Image gallery
+  selectedImage = '';
+  lightboxOpen = false;
 
   constructor(
     private route: ActivatedRoute,
@@ -41,13 +50,21 @@ export class ProductDetailsComponent {
     private cartService: CartService,
     private toastService: ToastService,
     public auth: AuthService,
-    private reviewService: ReviewService
+    private reviewService: ReviewService,
+    private recently: RecentlyViewedService
   ) {
     const id = this.route.snapshot.paramMap.get('id')!;
     this.productService.getProductById(id).subscribe(data => {
       this.product = data;
+      this.loading = false;
       this.reviews = data?.reviews || [];
+      this.selectedImage = data?.image || '';
       if (data) {
+        // Track recently viewed
+        this.recently.add(data);
+
+        this.recentlyViewed = this.recently.getItems().filter((p: any) => p.id !== data.id).slice(0, 6);
+
         this.productService.getProducts().subscribe(all => {
           this.allProducts = all;
           this.relatedProducts = all
@@ -58,6 +75,17 @@ export class ProductDetailsComponent {
     });
   }
 
+  get images(): string[] {
+    if (!this.product) return [];
+    const imgs = this.product.images || [];
+    if (imgs.length === 0 && this.product.image) return [this.product.image];
+    return imgs;
+  }
+
+  selectImage(img: string) { this.selectedImage = img; }
+  openLightbox() { this.lightboxOpen = true; }
+  closeLightbox() { this.lightboxOpen = false; }
+
   get avgRating() {
     if (!this.reviews.length) return 0;
     return this.reviews.reduce((s: number, r: any) => s + r.rating, 0) / this.reviews.length;
@@ -67,21 +95,19 @@ export class ProductDetailsComponent {
     return Array(5).fill(0).map((_, i) => i < Math.round(rating));
   }
 
-  decreaseQty() {
-    if (this.quantity > 1) this.quantity--;
-  }
-
-  increaseQty() {
-    this.quantity++;
-  }
+  decreaseQty() { if (this.quantity > 1) this.quantity--; }
+  increaseQty() { this.quantity++; }
 
   addToCart() {
-    if (this.product) {
+    if (!this.product) return;
+    this.addingToCart = true;
+    setTimeout(() => {
       for (let i = 0; i < this.quantity; i++) {
         this.cartService.addToCart(this.product);
       }
       this.toastService.show(this.quantity + ' x ' + this.product.name + ' added to cart', 'success');
-    }
+      setTimeout(() => this.addingToCart = false, 400);
+    }, 300);
   }
 
   addRelatedToCart(product: Product) {
@@ -110,5 +136,9 @@ export class ProductDetailsComponent {
         this.submittingReview = false;
       }
     });
+  }
+
+  stars(rating: number): boolean[] {
+    return Array(5).fill(0).map((_, i) => i < Math.round(rating));
   }
 }

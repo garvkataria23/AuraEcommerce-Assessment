@@ -1,4 +1,23 @@
-<div *ngIf="product; else notFound">
+<!-- Skeleton -->
+<div class="skeleton-detail" *ngIf="loading">
+  <div class="row g-0">
+    <div class="col-md-5">
+      <div class="skeleton skeleton-full"></div>
+    </div>
+    <div class="col-md-7">
+      <div class="skeleton-detail-body">
+        <div class="skeleton skeleton-text short"></div>
+        <div class="skeleton skeleton-text" style="height: 28px;"></div>
+        <div class="skeleton skeleton-text medium"></div>
+        <div class="skeleton skeleton-text" style="margin-top: 2rem;"></div>
+        <div class="skeleton skeleton-text"></div>
+        <div class="skeleton skeleton-text short"></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div *ngIf="!loading && product; else notFound">
   <!-- Breadcrumbs -->
   <nav class="breadcrumbs">
     <a routerLink="/products">Products</a>
@@ -13,7 +32,18 @@
     <div class="row g-0">
       <div class="col-md-5">
         <div class="details-image-wrap">
-          <img [src]="product.image" class="details-image" [alt]="product.name">
+          <img [src]="selectedImage || product.image" class="details-image" [alt]="product.name"
+            (click)="openLightbox()" title="Click to zoom">
+          <!-- Rating on image -->
+          <div class="product-rating" style="position: absolute; bottom: 12px; left: 12px; background: rgba(0,0,0,0.5); padding: 4px 10px; border-radius: var(--radius-full);">
+            <i class="bi" [ngClass]="s ? 'bi-star-fill' : 'bi-star'" style="color: #F59E0B; font-size: 0.7rem;" *ngFor="let s of starsArray(avgRating)"></i>
+            <span style="color: white; font-size: 0.7rem; margin-left: 4px;">{{ avgRating | number:'1.1-1' }}</span>
+          </div>
+        </div>
+        <!-- Image Gallery -->
+        <div class="image-gallery" *ngIf="images.length > 1">
+          <img *ngFor="let img of images" [src]="img" class="gallery-thumb" [class.active]="img === selectedImage"
+            (click)="selectImage(img)" [alt]="product.name">
         </div>
       </div>
       <div class="col-md-7">
@@ -37,7 +67,7 @@
             </div>
             <div class="details-meta-item">
               <span class="details-meta-label">SKU</span>
-              <span class="details-meta-value">#{{ product.id.slice(-6).toUpperCase() }}</span>
+              <span class="details-meta-value">#{{ product.id?.slice(-6)?.toUpperCase() || 'N/A' }}</span>
             </div>
           </div>
 
@@ -51,10 +81,12 @@
           </div>
 
           <div class="d-flex gap-2 flex-wrap">
-            <button class="btn-custom btn-primary-custom" style="padding: 0.8rem 2rem; font-size: 1rem;" (click)="addToCart()">
-              <i class="bi bi-cart-plus"></i> Add to Cart — {{ product.price * quantity | currency:'INR' }}
+            <button class="btn-custom btn-primary-custom atc-btn ripple" style="padding: 0.8rem 2rem; font-size: 1rem;"
+              (click)="addToCart()" [class.adding]="addingToCart" [class.added]="addingToCart">
+              <span class="atc-default"><i class="bi bi-cart-plus"></i> Add to Cart — {{ product.price * quantity | currency:'INR' }}</span>
+              <span class="atc-success"><i class="bi bi-check-lg"></i> Added!</span>
             </button>
-            <a class="btn-custom btn-outline-custom" routerLink="/products">
+            <a class="btn-custom btn-outline-custom ripple" routerLink="/products">
               <i class="bi bi-arrow-left"></i> Back
             </a>
           </div>
@@ -74,12 +106,11 @@
             <span *ngIf="reviews.length > 0"> | Avg: {{ avgRating | number:'1.1-1' }} / 5</span>
           </small>
         </div>
-        <button *ngIf="auth.isLoggedIn && !showReviewForm" class="btn-custom btn-primary-custom" (click)="showReviewForm = true">
+        <button *ngIf="auth.isLoggedIn && !showReviewForm" class="btn-custom btn-primary-custom ripple" (click)="showReviewForm = true">
           <i class="bi bi-pencil"></i> Write Review
         </button>
       </div>
 
-      <!-- Review Form -->
       <div *ngIf="showReviewForm" class="p-3 mb-3" style="background: var(--bg-main); border-radius: var(--radius-md);">
         <div class="mb-2 d-flex align-items-center gap-2">
           <label class="form-label-custom mb-0">Rating:</label>
@@ -91,15 +122,15 @@
         </div>
         <textarea class="form-control-custom mb-2" [(ngModel)]="reviewComment" placeholder="Share your thoughts..." rows="3"></textarea>
         <div class="d-flex gap-2">
-          <button class="btn-custom btn-primary-custom" (click)="submitReview()" [disabled]="submittingReview || !reviewComment.trim()">
+          <button class="btn-custom btn-primary-custom ripple" (click)="submitReview()" [disabled]="submittingReview || !reviewComment.trim()">
             <i class="bi" [ngClass]="submittingReview ? 'bi-arrow-repeat spin' : 'bi-check-lg'"></i>
             {{ submittingReview ? 'Submitting...' : 'Submit Review' }}
           </button>
-          <button class="btn-custom btn-outline-custom" (click)="showReviewForm = false">Cancel</button>
+          <button class="btn-custom btn-outline-custom ripple" (click)="showReviewForm = false">Cancel</button>
         </div>
       </div>
 
-      <!-- Review List -->
+      <!-- Reviews Empty -->
       <div *ngIf="reviews.length === 0" class="text-center py-4" style="color: var(--text-light);">
         <i class="bi bi-chat-square-text fs-2"></i>
         <p class="mt-2">No reviews yet. Be the first to review!</p>
@@ -122,22 +153,55 @@
 
   <!-- Related Products -->
   <div class="mt-5" *ngIf="relatedProducts.length > 0">
-    <h3 class="section-title">Related Products</h3>
+    <h3 class="section-title">You May Also Like</h3>
     <p class="section-subtitle">More items in {{ product.category }}</p>
     <div class="product-grid">
       <div class="product-card" *ngFor="let item of relatedProducts">
         <div class="product-image-wrap">
-          <img [src]="item.image" class="product-image" [alt]="item.name" loading="lazy">
+          <a [routerLink]="['/product', item.id]">
+            <img [src]="item.image" class="product-image" [alt]="item.name" loading="lazy">
+          </a>
+        </div>
+        <div class="product-body">
+          <span class="product-category">{{ item.category }}</span>
+          <h5 class="product-name">{{ item.name }}</h5>
+          <div class="product-rating" *ngIf="item.rating">
+            <i class="bi" [ngClass]="s ? 'bi-star-fill' : 'bi-star'" *ngFor="let s of stars(item.rating)"></i>
+          </div>
+          <div class="product-price">{{ item.price | currency:'INR' }}</div>
+          <div class="product-card-footer">
+            <button class="btn-custom btn-primary-custom atc-btn ripple" (click)="addRelatedToCart(item)">
+              <span class="atc-default"><i class="bi bi-cart-plus"></i> Add</span>
+            </button>
+            <a class="btn-custom btn-outline-custom ripple" [routerLink]="['/product', item.id]">
+              <i class="bi bi-eye"></i>
+            </a>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Recently Viewed -->
+  <div class="mt-5" *ngIf="recentlyViewed.length > 0">
+    <h3 class="section-title">Recently Viewed</h3>
+    <p class="section-subtitle">Continue where you left off</p>
+    <div class="product-grid">
+      <div class="product-card" *ngFor="let item of recentlyViewed">
+        <div class="product-image-wrap">
+          <a [routerLink]="['/product', item.id]">
+            <img [src]="item.image" class="product-image" [alt]="item.name" loading="lazy">
+          </a>
         </div>
         <div class="product-body">
           <span class="product-category">{{ item.category }}</span>
           <h5 class="product-name">{{ item.name }}</h5>
           <div class="product-price">{{ item.price | currency:'INR' }}</div>
           <div class="product-card-footer">
-            <button class="btn-custom btn-primary-custom" (click)="addRelatedToCart(item)">
-              <i class="bi bi-cart-plus"></i> Add
+            <button class="btn-custom btn-primary-custom atc-btn ripple" (click)="addRelatedToCart(item)">
+              <span class="atc-default"><i class="bi bi-cart-plus"></i> Add</span>
             </button>
-            <a class="btn-custom btn-outline-custom" [routerLink]="['/product', item.id]">
+            <a class="btn-custom btn-outline-custom ripple" [routerLink]="['/product', item.id]">
               <i class="bi bi-eye"></i>
             </a>
           </div>
@@ -147,13 +211,19 @@
   </div>
 </div>
 
+<!-- Lightbox -->
+<div class="lightbox" *ngIf="lightboxOpen" (click)="closeLightbox()">
+  <button class="lightbox-close" (click)="closeLightbox()"><i class="bi bi-x-lg"></i></button>
+  <img [src]="selectedImage || product?.image" [alt]="product?.name">
+</div>
+
 <ng-template #notFound>
   <div class="details-card p-5 text-center">
     <div class="empty-state">
       <div class="empty-state-icon"><i class="bi bi-exclamation-triangle"></i></div>
       <h4>Product not found</h4>
       <p>The product you're looking for doesn't exist or has been removed.</p>
-      <a class="btn-custom btn-primary-custom" routerLink="/products">
+      <a class="btn-custom btn-primary-custom ripple" routerLink="/products">
         <i class="bi bi-arrow-left"></i> Back to Products
       </a>
     </div>

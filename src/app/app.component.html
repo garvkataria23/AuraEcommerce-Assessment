@@ -5,7 +5,7 @@
     </a>
 
     <div class="d-flex align-items-center gap-2 order-lg-last">
-      <button class="theme-toggle" (click)="toggleTheme()" title="Toggle theme">
+      <button class="theme-toggle ripple" (click)="toggleTheme()" title="Toggle theme">
         <i class="bi" [ngClass]="isDark ? 'bi-sun-fill' : 'bi-moon-fill'"></i>
       </button>
 
@@ -72,6 +72,23 @@
 <button class="back-to-top" [class.visible]="showBackToTop" (click)="scrollToTop()" title="Back to top">
   <i class="bi bi-arrow-up"></i>
 </button>
+
+<!-- Bottom Navigation (Mobile) -->
+<div class="bottom-nav">
+  <a class="bn-item" routerLink="/products" routerLinkActive="active">
+    <i class="bi bi-grid-fill"></i> Shop
+  </a>
+  <a class="bn-item" routerLink="/cart" routerLinkActive="active">
+    <i class="bi bi-cart-fill"></i> Cart
+    <span class="bn-badge" *ngIf="cartService.getCartCount() > 0">{{ cartService.getCartCount() }}</span>
+  </a>
+  <a class="bn-item" routerLink="/orders" routerLinkActive="active">
+    <i class="bi bi-box-seam"></i> Orders
+  </a>
+  <a class="bn-item" [routerLink]="auth.isLoggedIn ? '/orders' : '/login'" routerLinkActive="active">
+    <i class="bi bi-person-fill"></i> {{ auth.isLoggedIn ? displayName : 'Account' }}
+  </a>
+</div>
 
 <footer class="footer-modern">
   <div class="container text-center">

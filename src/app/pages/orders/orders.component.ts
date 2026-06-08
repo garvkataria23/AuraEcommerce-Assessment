@@ -4,11 +4,12 @@ import { RouterLink } from '@angular/router';
 import { HttpClient } from '@angular/common/http';
 import { environment } from '../../../environments/environment';
 import { AuthService } from '../../services/auth.service';
+import { OrderTimelineComponent } from '../../components/order-timeline/order-timeline.component';
 
 @Component({
   selector: 'app-orders',
   standalone: true,
-  imports: [CommonModule, RouterLink, CurrencyPipe, DatePipe],
+  imports: [CommonModule, RouterLink, CurrencyPipe, DatePipe, OrderTimelineComponent],
   templateUrl: './orders.component.html'
 })
 export class OrdersComponent implements OnInit {
@@ -28,4 +29,6 @@ export class OrdersComponent implements OnInit {
     const map: any = { pending: 'warning', confirmed: 'info', shipped: 'primary', delivered: 'success', cancelled: 'danger' };
     return map[s] || 'secondary';
   }
+
+  get skeletonArray() { return Array(3); }
 }
